@@ -1,0 +1,388 @@
+<!DOCTYPE html><html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Insurance Budget Planner — Chiang Rai</title>
+  <meta name="description" content="เครื่องคำนวณไอเดียคุ้มครองประกันชีวิต/สุขภาพ/อุบัติเหตุ สำหรับงบประมาณต่อเดือน — ทำงานบนเครื่อง ไม่เก็บข้อมูล" />
+  <style>
+    :root{
+      --bg:#0f172a;          /* slate-900 */
+      --card:#111827;        /* gray-900 */
+      --muted:#94a3b8;       /* slate-400 */
+      --text:#e5e7eb;        /* gray-200 */
+      --brand:#38bdf8;       /* sky-400 */
+      --brand-2:#22d3ee;     /* cyan-400 */
+      --ok:#22c55e;          /* green-500 */
+      --warn:#f59e0b;        /* amber-500 */
+      --bad:#ef4444;         /* red-500 */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans Thai, "Noto Sans", sans-serif;
+      color:var(--text); background: radial-gradient(1200px 800px at 20% -10%, rgba(56,189,248,.25), transparent 60%),
+                        radial-gradient(800px 600px at 100% 0%, rgba(34,211,238,.18), transparent 60%),
+                        var(--bg);
+    }
+    .container{max-width:1100px; margin:0 auto; padding:24px}
+    header{display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:16px}
+    .title{font-size: clamp(20px, 3vw, 28px); font-weight:800; letter-spacing:.3px}
+    .subtitle{color:var(--muted); font-size:14px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:18px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .grid{display:grid; grid-template-columns:1fr; gap:16px}
+    @media(min-width:940px){ .grid{ grid-template-columns: 1.05fr .95fr } }.section-title{font-weight:700; margin:4px 0 10px}
+label{display:block; font-size:13px; color:var(--muted); margin:10px 0 8px}
+input[type="number"], select{
+  width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.14);
+  background:#0b1220; color:var(--text); outline:none; transition:.15s border;
+}
+input[type="number"]:focus, select:focus{border-color:var(--brand)}
+.row{display:grid; grid-template-columns:1fr; gap:12px}
+@media(min-width:680px){ .row{ grid-template-columns: repeat(2,1fr) } }
+
+.actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+button{cursor:pointer; border:none; border-radius:12px; padding:12px 14px; font-weight:700}
+.btn-primary{background:linear-gradient(90deg, var(--brand), var(--brand-2)); color:#00141a}
+.btn-ghost{background:rgba(255,255,255,.06); color:var(--text); border:1px solid rgba(255,255,255,.1)}
+
+.badges{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.badge{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.12); color:var(--muted)}
+
+.result{display:grid; gap:14px}
+.kpi{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.kpi .box{background:#0b1220; border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px}
+.kpi .box h4{margin:2px 0 6px; font-size:13px; color:var(--muted); font-weight:600}
+.kpi .box .val{font-size:18px; font-weight:800}
+
+.plans{display:grid; gap:12px}
+.plan{background:#0b1220; border:1px solid rgba(255,255,255,.1); border-radius:16px; padding:14px}
+.plan h3{margin:0 0 8px; font-size:16px}
+.plan .meta{font-size:12px; color:var(--muted); margin-bottom:10px}
+.plan .line{display:flex; justify-content:space-between; padding:6px 0; border-top:1px dashed rgba(255,255,255,.09)}
+.plan .line:first-of-type{border-top:none}
+
+.alloc{margin-top:8px}
+.bar{height:10px; width:100%; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden}
+.bar>span{display:block; height:100%}
+
+.note{color:var(--muted); font-size:12px}
+footer{color:var(--muted); font-size:12px; margin-top:16px}
+.mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <div class="title">📊 Insurance Budget Planner — Chiang Rai</div>
+        <div class="subtitle">คำนวณงบ & คุ้มครองเบื้องต้น · ทำงานบนเบราว์เซอร์ · ไม่เก็บข้อมูล</div>
+      </div>
+      <div class="actions">
+        <button id="calcBtn" class="btn-primary">คำนวณ ✨</button>
+        <button id="copyBtn" class="btn-ghost">คัดลอกสรุป</button>
+        <button id="printBtn" class="btn-ghost">พิมพ์/บันทึก PDF</button>
+        <button id="resetBtn" class="btn-ghost">ล้างข้อมูล</button>
+      </div>
+    </header><div class="grid">
+  <section class="card">
+    <div class="section-title">🧾 ข้อมูลเบื้องต้น</div>
+    <div class="row">
+      <div>
+        <label>อายุ (ปี)</label>
+        <input type="number" id="age" min="18" max="70" placeholder="เช่น 38" />
+      </div>
+      <div>
+        <label>เพศ</label>
+        <select id="sex">
+          <option value="male">ชาย</option>
+          <option value="female">หญิง</option>
+          <option value="na">ไม่ระบุ</option>
+        </select>
+      </div>
+      <div>
+        <label>รายได้ต่อเดือน (บาท)</label>
+        <input type="number" id="income" min="0" step="500" placeholder="เช่น 20000" />
+      </div>
+      <div>
+        <label>สูบบุหรี่?</label>
+        <select id="smoker">
+          <option value="no">ไม่สูบ</option>
+          <option value="yes">สูบ</option>
+        </select>
+      </div>
+      <div>
+        <label>จำนวนผู้อยู่ในอุปการะ</label>
+        <input type="number" id="dependents" min="0" max="6" placeholder="เช่น 1" />
+      </div>
+      <div>
+        <label>อาชีพ</label>
+        <select id="occupation">
+          <option value="low">เสี่ยงต่ำ (ครู/ออฟฟิศ)</option>
+          <option value="med">เสี่ยงกลาง (ขายของ/ขับรถ)</option>
+          <option value="high">เสี่ยงสูง (งานก่อสร้าง/ภาคสนามหนัก)</option>
+        </select>
+      </div>
+      <div>
+        <label>โรงพยาบาลที่ใช้บ่อย</label>
+        <select id="hospital">
+          <option value="public">รัฐ</option>
+          <option value="private">เอกชน</option>
+        </select>
+      </div>
+      <div>
+        <label>หนี้บ้านคงเหลือ (บาท)</label>
+        <input type="number" id="homeDebt" min="0" step="5000" placeholder="เช่น 800000" />
+      </div>
+      <div>
+        <label>หนี้รถคงเหลือ (บาท)</label>
+        <input type="number" id="carDebt" min="0" step="5000" placeholder="เช่น 250000" />
+      </div>
+      <div>
+        <label>โฟกัสหลัก</label>
+        <select id="priority">
+          <option value="risk">กันความเสี่ยง</option>
+          <option value="health">สุขภาพมาก่อน</option>
+          <option value="savings">ออมระยะยาว</option>
+        </select>
+      </div>
+    </div>
+    <div class="badges">
+      <div class="badge">💡 คำเตือน: ตัวเลขนี้เป็น <b>แนวทาง</b> ไม่ใช่เบี้ยจริง</div>
+      <div class="badge">🔒 ทำงานบนเบราว์เซอร์ — ไม่ส่งข้อมูลออก</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">📈 ผลลัพธ์</div>
+    <div id="results" class="result">
+      <div class="kpi">
+        <div class="box">
+          <h4>งบประมาณต่อเดือน (แนะนำ)</h4>
+          <div class="val" id="budget"></div>
+          <div class="note">ช่วงอ้างอิง: <span id="budgetRange" class="mono"></span></div>
+        </div>
+        <div class="box">
+          <h4>ทุนชีวิตฐาน (เป้าหมาย)</h4>
+          <div class="val" id="lifeBase"></div>
+          <div class="note">คำนวณจากหนี้ + รายได้ต่อปี × ปีกันกระแทก</div>
+        </div>
+      </div>
+
+      <div class="plans">
+        <div class="plan" id="planA">
+          <h3>แพ็ก A — เริ่มต้นเอาตัวรอด</h3>
+          <div class="meta">เหมาะกับงบจำกัด เน้นปิดหนี้หลัก + กันเสี่ยงหนัก</div>
+          <div class="line"><span>Term Life (ทุนชีวิต)</span><b id="a_life"></b></div>
+          <div class="line"><span>Critical Illness (โรคร้ายแรง)</span><b id="a_ci"></b></div>
+          <div class="line"><span>PA (อุบัติเหตุ)</span><b id="a_pa"></b></div>
+          <div class="line"><span>Hospital Cash (ชดเชยรายวัน)</span><b id="a_cash"></b></div>
+          <div class="alloc">
+            <div class="note">สัดส่วนงบเป้า</div>
+            <div class="bar"><span id="a_bar" style="width:0;background:linear-gradient(90deg,var(--brand),var(--brand-2))"></span></div>
+          </div>
+        </div>
+
+        <div class="plan" id="planB">
+          <h3>แพ็ก B — สมดุลครอบครัว (แนะนำ)</h3>
+          <div class="meta">คุ้ม 4 มิติ: ชีวิต / โรคร้าย / อุบัติเหตุ / รายได้หาย</div>
+          <div class="line"><span>Term Life (ทุนชีวิต)</span><b id="b_life"></b></div>
+          <div class="line"><span>Critical Illness (โรคร้ายแรง)</span><b id="b_ci"></b></div>
+          <div class="line"><span>PA (อุบัติเหตุ)</span><b id="b_pa"></b></div>
+          <div class="line"><span>Hospital Cash (ชดเชยรายวัน)</span><b id="b_cash"></b></div>
+          <div class="alloc">
+            <div class="note">สัดส่วนงบเป้า</div>
+            <div class="bar"><span id="b_bar" style="width:0;background:linear-gradient(90deg,var(--ok),var(--brand))"></span></div>
+          </div>
+        </div>
+
+        <div class="plan" id="planC">
+          <h3>แพ็ก C — อุ่นใจระยะยาว</h3>
+          <div class="meta">โรคร้ายแรงสูงขึ้น + ชดเชยรายวันมากขึ้น</div>
+          <div class="line"><span>Term Life (ทุนชีวิต)</span><b id="c_life"></b></div>
+          <div class="line"><span>Critical Illness (โรคร้ายแรง)</span><b id="c_ci"></b></div>
+          <div class="line"><span>PA (อุบัติเหตุ)</span><b id="c_pa"></b></div>
+          <div class="line"><span>Hospital Cash (ชดเชยรายวัน)</span><b id="c_cash"></b></div>
+          <div class="alloc">
+            <div class="note">สัดส่วนงบเป้า</div>
+            <div class="bar"><span id="c_bar" style="width:0;background:linear-gradient(90deg,var(--warn),var(--brand))"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">❗️นี่ไม่ใช่ใบเสนอราคา/เบี้ยจริง — ใช้เป็นไกด์เพื่อคุยกับที่ปรึกษาและขอใบเสนอราคาทางการ</div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <p>© 2025 Insurance Budget Planner · ทำงานบนเครื่องของคุณ (LocalStorage) · <span class="mono">v1.0</span></p>
+</footer>
+
+  </div>  <script>
+    // ===== Utilities =====
+    const $ = (id)=>document.getElementById(id);
+    const fmtTHB = (n)=> isNaN(n)?'-': n.toLocaleString('th-TH',{style:'currency',currency:'THB',maximumFractionDigits:0});
+    const fmtNum = (n)=> isNaN(n)?0: Math.max(0, Math.floor(n));
+    const roundTo = (n, step)=> Math.round(n/step)*step;
+    const clamp = (n, min, max)=> Math.min(max, Math.max(min,n));
+
+    function saveForm(){
+      const data = {
+        age: +$('#age').value||'',
+        sex: $('#sex').value,
+        income: +$('#income').value||'',
+        smoker: $('#smoker').value,
+        dependents: +$('#dependents').value||'',
+        occupation: $('#occupation').value,
+        hospital: $('#hospital').value,
+        homeDebt: +$('#homeDebt').value||'',
+        carDebt: +$('#carDebt').value||'',
+        priority: $('#priority').value,
+      };
+      localStorage.setItem('ibp_form', JSON.stringify(data));
+    }
+
+    function loadForm(){
+      try{
+        const data = JSON.parse(localStorage.getItem('ibp_form')||'{}');
+        if(!data) return;
+        ['age','sex','income','smoker','dependents','occupation','hospital','homeDebt','carDebt','priority']
+          .forEach(k=>{ if(data[k]!==undefined && data[k]!==null) { const el = $('#'+k); if(el) el.value = data[k]; }});
+      }catch(err){/* noop */}
+    }
+
+    // ===== Core Calculation =====
+    function calculate(){
+      const age = +$('#age').value;
+      const income = +$('#income').value;
+      const smoker = $('#smoker').value==='yes';
+      const dependents = +$('#dependents').value || 0;
+      const occ = $('#occupation').value; // low/med/high
+      const hospital = $('#hospital').value; // public/private
+      const homeDebt = +$('#homeDebt').value || 0;
+      const carDebt = +$('#carDebt').value || 0;
+      const priority = $('#priority').value; // risk/health/savings
+
+      if(!age || !income){
+        alert('กรอกอายุและรายได้ต่อเดือนก่อนนะ');
+        return;
+      }
+
+      const annualIncome = income*12;
+      const debtTotal = homeDebt + carDebt;
+
+      // Recommended percentage of monthly income for protection
+      let perc = income < 5000 ? 0.04 : income < 10000 ? 0.05 : income <= 20000 ? 0.07 : 0.08;
+      if(smoker) perc += 0.01;
+      if(dependents>=2) perc += 0.01;
+      if(priority==='health') perc -= 0.005; // shift some budget to health; still total budget similar
+      perc = clamp(perc, 0.03, 0.10);
+
+      const budget = income * perc;
+      const budgetMin = income * 0.03;
+      const budgetMax = income * 0.10;
+
+      // Base life sum assured target
+      const years = dependents>=2 ? 5 : 3; // conservative cushion years
+      let lifeBase = debtTotal + (annualIncome * years);
+      // Round to nearest 50k for nicer numbers
+      lifeBase = roundTo(lifeBase, 50000);
+
+      // Plans multiplier
+      const lifeA = roundTo(lifeBase * 0.75, 50000);
+      const lifeB = roundTo(lifeBase * 1.00, 50000);
+      const lifeC = roundTo(lifeBase * 1.25, 50000);
+
+      // CI suggestions (age-aware but simple)
+      let ciA = 300000, ciB = 500000, ciC = 1000000;
+      if(age<30){ ciA=200000; ciB=400000; ciC=800000; }
+      if(age>=45){ ciA=400000; ciB=600000; ciC=1000000; }
+
+      // PA suggestions with occupation risk tweak
+      const occBoost = occ==='high'? 200000 : (occ==='med'? 100000 : 0);
+      const paA = 300000 + occBoost;
+      const paB = 500000 + occBoost;
+      const paC = 700000 + occBoost;
+
+      // Hospital Cash per day
+      const cashA = hospital==='public' ? 1000 : 800;
+      const cashB = hospital==='public' ? 1500 : 1200;
+      const cashC = hospital==='public' ? 2000 : 1500;
+
+      // Budget allocation (target split, not premium)
+      let split = { life:0.5, ci:0.25, pa:0.15, cash:0.10 };
+      if(priority==='health') split = { life:0.4, ci:0.30, pa:0.1, cash:0.20 };
+      if(priority==='savings') split = { life:0.45, ci:0.20, pa:0.15, cash:0.10 };
+
+      // Update UI
+      $('#budget').textContent = fmtTHB(budget);
+      $('#budgetRange').textContent = `${fmtTHB(budgetMin)} – ${fmtTHB(budgetMax)}`;
+      $('#lifeBase').textContent = fmtTHB(lifeBase);
+
+      $('#a_life').textContent = fmtTHB(lifeA);
+      $('#b_life').textContent = fmtTHB(lifeB);
+      $('#c_life').textContent = fmtTHB(lifeC);
+
+      $('#a_ci').textContent = fmtTHB(ciA);
+      $('#b_ci').textContent = fmtTHB(ciB);
+      $('#c_ci').textContent = fmtTHB(ciC);
+
+      $('#a_pa').textContent = fmtTHB(paA);
+      $('#b_pa').textContent = fmtTHB(paB);
+      $('#c_pa').textContent = fmtTHB(paC);
+
+      $('#a_cash').textContent = `${cashA.toLocaleString('th-TH')} บาท/วัน`;
+      $('#b_cash').textContent = `${cashB.toLocaleString('th-TH')} บาท/วัน`;
+      $('#c_cash').textContent = `${cashC.toLocaleString('th-TH')} บาท/วัน`;
+
+      // Fill allocation bars by % of recommended budget used notionally (visual only)
+      $('#a_bar').style.width = `${clamp((split.life+split.ci+split.pa+split.cash)*100,0,100)}%`;
+      $('#b_bar').style.width = `${clamp((split.life+split.ci+split.pa+split.cash)*100,0,100)}%`;
+      $('#c_bar').style.width = `${clamp((split.life+split.ci+split.pa+split.cash)*100,0,100)}%`;
+
+      // Save last summary to dataset for copy
+      const summary = [
+        `\u{1F4B0} งบประมาณต่อเดือน (แนะนำ): ${fmtTHB(budget)} (ช่วงอ้างอิง ${fmtTHB(budgetMin)}–${fmtTHB(budgetMax)})`,
+        `\u{1F4AE} ทุนชีวิตฐาน (เป้าหมาย): ${fmtTHB(lifeBase)} (หนี้รวม ${fmtTHB(debtTotal)}, ${years} ปีคูณรายได้)`,
+        `\n\u{1F4CB} แพ็ก A: Life ${fmtTHB(lifeA)} | CI ${fmtTHB(ciA)} | PA ${fmtTHB(paA)} | Cash ${cashA.toLocaleString('th-TH')} บ./วัน`,
+        `\u{2705} แพ็ก B (แนะนำ): Life ${fmtTHB(lifeB)} | CI ${fmtTHB(ciB)} | PA ${fmtTHB(paB)} | Cash ${cashB.toLocaleString('th-TH')} บ./วัน`,
+        `\u{1F512} แพ็ก C: Life ${fmtTHB(lifeC)} | CI ${fmtTHB(ciC)} | PA ${fmtTHB(paC)} | Cash ${cashC.toLocaleString('th-TH')} บ./วัน`,
+        `\n\u{2139}\uFE0F} หมายเหตุ: ตัวเลขเพื่อการวางแผนเบื้องต้น ไม่ใช่ใบเสนอราคา และไม่ได้สะท้อนเบี้ยประกันจริง\n`
+      ].join('\n');
+      document.body.dataset.summary = summary;
+    }
+
+    // ===== Events =====
+    ['age','sex','income','smoker','dependents','occupation','hospital','homeDebt','carDebt','priority']
+      .forEach(id=>{
+        const el = $(id); el.addEventListener('input', ()=>{ saveForm(); });
+      });
+
+    $('#calcBtn').addEventListener('click', ()=>{ calculate(); saveForm(); });
+    $('#copyBtn').addEventListener('click', async ()=>{
+      const s = document.body.dataset.summary || '';
+      if(!s){ alert('ยังไม่มีผลลัพธ์ กด "คำนวณ" ก่อนนะ'); return; }
+      try{ await navigator.clipboard.writeText(s); alert('คัดลอกสรุปแล้ว พร้อมวางในแชต/โน้ต'); }catch(e){ alert('เบราว์เซอร์ไม่อนุญาตให้คัดลอกอัตโนมัติ'); }
+    });
+    $('#printBtn').addEventListener('click', ()=> window.print());
+    $('#resetBtn').addEventListener('click', ()=>{
+      if(confirm('ล้างข้อมูลทั้งหมด?')){ localStorage.removeItem('ibp_form'); location.reload(); }
+    });
+
+    // Seed example for quick demo
+    function seedIfEmpty(){
+      if(localStorage.getItem('ibp_form')) return;
+      $('#age').value = 38; $('#sex').value='male'; $('#income').value=20000; $('#smoker').value='no';
+      $('#dependents').value=1; $('#occupation').value='low'; $('#hospital').value='public';
+      $('#homeDebt').value=800000; $('#carDebt').value=250000; $('#priority').value='risk';
+    }
+
+    loadForm();
+    seedIfEmpty();
+    calculate();
+  </script></body>
+</html>
