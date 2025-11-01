@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GG‑NINEPLANNER — Insurance Budget Planner</title>
+  <meta name="description" content="เครื่องคำนวณเพื่อประกอบการตัดสินใจเลือกความคุ้มครอง (ชีวิต/โรคร้าย/อุบัติเหตุ/ชดเชยรายวัน). ไม่ใช่ใบเสนอราคา." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230ea5e9'/%3E%3Ctext x='50' y='58' font-size='46' text-anchor='middle' fill='white' font-family='sans-serif'%3EGG%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-row">
+      <div class="brand">
+        <div class="logo">GG</div>
+        <div class="brand-text">
+          <strong>GG‑NINEPLANNER</strong>
+          <span>Insurance Budget Planner</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="themeBtn" class="btn-outline" aria-label="สลับโหมดแสง/มืด"><span id="themeIcon" aria-hidden="true">🌙</span></button>
+        <button id="printBtn" class="btn-primary hide-sm">พิมพ์ / PDF</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-left">
+        <h1>วางงบและทุนคุ้มครองแบบเข้าใจง่าย</h1>
+        <p class="muted">
+          ตัวเลขเป็นการประมาณเพื่อ <b>ประกอบการตัดสินใจ</b> เท่านั้น — <b>ไม่ใช่ใบเสนอราคา</b> และไม่เก็บข้อมูลขึ้นเซิร์ฟเวอร์
+        </p>
+        <div class="chips">
+          <span class="chip">Mobile‑First</span>
+          <span class="chip">Dark/Light</span>
+          <span class="chip">No Server</span>
+        </div>
+      </div>
+      <div class="hero-right card kpi">
+        <div class="kpi-grid">
+          <div class="kpi-item">
+            <div class="kpi-label">งบแนะนำ/เดือน</div>
+            <div id="kpiBudget" class="kpi-value">—</div>
+            <div id="kpiPct" class="kpi-sub">—</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">ช่วงงบอ้างอิง</div>
+            <div id="kpiRange" class="kpi-value">—</div>
+            <div class="kpi-sub">≈ 3–10% ของรายได้</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">ทุนชีวิตฐาน</div>
+            <div id="kpiLife" class="kpi-value">—</div>
+            <div class="kpi-sub">หนี้รวม + รายได้ 3–5 ปี</div>
+          </div>
+        </div>
+        <button id="quickCalc" class="btn-primary full">คำนวณด้วยข้อมูลตัวอย่าง</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>🧾 ข้อมูลของคุณ</h2>
+        <button id="toggleAdvanced" class="btn-outline btn-sm">โหมดขั้นสูง</button>
+      </div>
+      <p class="muted small">กรอกเฉพาะที่จำเป็น — ระบบจะคำนวณอัตโนมัติเมื่อเปลี่ยนค่า</p>
+
+      <div id="errorBanner" class="error-banner" role="alert" aria-live="polite" hidden></div>
+
+      <div class="presets">
+        <button data-preset="teacher" class="btn-chip">ครู (20k/รัฐ)</button>
+        <button data-preset="freelance" class="btn-chip">ฟรีแลนซ์ (15k/เอกชน)</button>
+        <button data-preset="family" class="btn-chip">มีลูก 2</button>
+        <button data-preset="starter" class="btn-chip">เริ่มต้นงบต่ำ</button>
+      </div>
+
+      <form id="form" novalidate class="grid">
+        <div class="field">
+          <label for="age">อายุ (ปี)</label>
+          <input id="age" type="number" min="18" max="70" inputmode="numeric" placeholder="18–70" required />
+          <small id="ageHelp" class="hint">ใช้เพื่อประเมินทุนโรคร้าย/ความเสี่ยง</small>
+          <div class="error" id="err-age"></div>
+        </div>
+        <div class="field">
+          <label for="sex">เพศ</label>
+          <select id="sex">
+            <option value="male">ชาย</option>
+            <option value="female">หญิง</option>
+            <option value="na">ไม่ระบุ</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="income">รายได้ต่อเดือน (บาท)</label>
+          <input id="income" type="number" step="500" inputmode="numeric" placeholder="เช่น 20000" required />
+          <small class="hint">ระบบแนะนำงบ ~3–10% ของรายได้/เดือน</small>
+          <div class="error" id="err-income"></div>
+        </div>
+        <div class="field">
+          <label for="dependents">ผู้อยู่ในอุปการะ (คน)</label>
+          <input id="dependents" type="number" min="0" max="6" value="0" />
+        </div>
+        <div class="field">
+          <label for="smoker">สูบบุหรี่?</label>
+          <select id="smoker">
+            <option value="no">ไม่สูบ</option>
+            <option value="yes">สูบ</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="occupation">อาชีพ</label>
+          <select id="occupation">
+            <option value="low">เสี่ยงต่ำ (ครู/ออฟฟิศ)</option>
+            <option value="med">เสี่ยงกลาง (ขายของ/ขับรถ)</option>
+            <option value="high">เสี่ยงสูง (ภาคสนามหนัก)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="hospital">โรงพยาบาลที่ใช้บ่อย</label>
+          <select id="hospital">
+            <option value="public">รัฐ</option>
+            <option value="private">เอกชน</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="homeDebt">หนี้บ้านคงเหลือ (บาท)</label>
+          <input id="homeDebt" type="number" step="5000" inputmode="numeric" placeholder="เช่น 800000" />
+        </div>
+        <div class="field">
+          <label for="carDebt">หนี้รถคงเหลือ (บาท)</label>
+          <input id="carDebt" type="number" step="5000" inputmode="numeric" placeholder="เช่น 250000" />
+        </div>
+        <div class="field">
+          <label for="priority">โฟกัสหลัก</label>
+          <select id="priority">
+            <option value="risk">กันความเสี่ยง</option>
+            <option value="health">สุขภาพมาก่อน</option>
+            <option value="savings">ออมระยะยาว</option>
+          </select>
+        </div>
+      </form>
+
+      <div id="advanced" class="advanced hidden">
+        <div class="advanced-left">
+          <label class="checkbox">
+            <input id="autoBudget" type="checkbox" checked />
+            ให้ระบบแนะนำงบอัตโนมัติ
+          </label>
+
+          <div id="manualBudgetWrap" class="manual disabled">
+            <div class="slider-head">
+              <span>สัดส่วนงบต่อรายได้</span>
+              <b id="manualBudgetPct">7%</b>
+            </div>
+            <input id="manualBudget" type="range" min="3" max="10" step="0.5" value="7" />
+            <div class="hint small">จะใช้เมื่อปิด “แนะนำงบอัตโนมัติ”</div>
+          </div>
+        </div>
+        <div class="advanced-right">
+          <div class="small muted">สัดส่วนจัดสรรงบโดยประมาณ</div>
+          <div class="bars">
+            <div class="bar"><span>Life</span><div class="track"><div id="barLife" class="fill" style="width:50%"></div></div><span id="pctLife" class="pct">50%</span></div>
+            <div class="bar"><span>CI</span><div class="track"><div id="barCI" class="fill" style="width:25%"></div></div><span id="pctCI" class="pct">25%</span></div>
+            <div class="bar"><span>PA</span><div class="track"><div id="barPA" class="fill" style="width:15%"></div></div><span id="pctPA" class="pct">15%</span></div>
+            <div class="bar"><span>Cash</span><div class="track"><div id="barCash" class="fill" style="width:10%"></div></div><span id="pctCash" class="pct">10%</span></div>
+          </div>
+          <div class="hint small">สัดส่วนจะปรับอัตโนมัติเมื่อเปลี่ยน “โฟกัสหลัก”</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="calcBtn" class="btn-primary">คำนวณ</button>
+        <button id="copyBtn" class="btn-outline">คัดลอกสรุป</button>
+        <button id="shareBtn" class="btn-outline">แชร์</button>
+        <button id="exportBtn" class="btn-outline">ส่งออก JSON</button>
+        <button id="resetBtn" class="btn-outline">ล้างข้อมูล</button>
+      </div>
+      <p class="muted tiny">ข้อมูลนี้ใช้เพื่อ <b>ประกอบการตัดสินใจ</b> เท่านั้น ไม่ใช่ข้อมูลจริง/ใบเสนอราคา ผลจริงขึ้นกับเงื่อนไขบริษัทและการพิจารณารับประกัน</p>
+    </section>
+
+    <section id="results" class="grid-cards" aria-live="polite">
+      <article id="planA" class="card plan hidden">
+        <div class="plan-head">
+          <h3>แพ็ก A — เริ่มต้น</h3>
+          <span class="pill">งบต่ำ</span>
+        </div>
+        <p class="muted small">เน้นปิดหนี้หลัก + กันเสี่ยงหนักก่อน</p>
+        <ul class="list">
+          <li><span>Term Life</span><b id="a_life">—</b></li>
+          <li><span>Critical Illness</span><b id="a_ci">—</b></li>
+          <li><span>PA</span><b id="a_pa">—</b></li>
+          <li><span>Hospital Cash</span><b id="a_cash">—</b></li>
+        </ul>
+        <details class="small">
+          <summary class="link">คำอธิบาย</summary>
+          <div id="a_hint" class="muted">—</div>
+        </details>
+      </article>
+
+      <article id="planB" class="card plan hidden recommended">
+        <div class="plan-head">
+          <h3>แพ็ก B — สมดุล</h3>
+          <span id="b_badge" class="pill">ตัวเลือกกลาง</span>
+        </div>
+        <p class="muted small">คุ้ม 4 มิติ: ชีวิต / โรคร้าย / อุบัติเหตุ / รายได้หาย</p>
+        <ul class="list">
+          <li><span>Term Life</span><b id="b_life">—</b></li>
+          <li><span>Critical Illness</span><b id="b_ci">—</b></li>
+          <li><span>PA</span><b id="b_pa">—</b></li>
+          <li><span>Hospital Cash</span><b id="b_cash">—</b></li>
+        </ul>
+        <details class="small">
+          <summary class="link">คำอธิบาย</summary>
+          <div id="b_hint" class="muted">—</div>
+        </details>
+      </article>
+
+      <article id="planC" class="card plan hidden">
+        <div class="plan-head">
+          <h3>แพ็ก C — เพิ่มความคุ้มครอง</h3>
+          <span class="pill">งบสูง</span>
+        </div>
+        <p class="muted small">เพิ่มโรคร้ายแรง + ชดเชยรายวัน</p>
+        <ul class="list">
+          <li><span>Term Life</span><b id="c_life">—</b></li>
+          <li><span>Critical Illness</span><b id="c_ci">—</b></li>
+          <li><span>PA</span><b id="c_pa">—</b></li>
+          <li><span>Hospital Cash</span><b id="c_cash">—</b></li>
+        </ul>
+        <details class="small">
+          <summary class="link">คำอธิบาย</summary>
+          <div id="c_hint" class="muted">—</div>
+        </details>
+      </article>
+    </section>
+
+    <section class="card">
+      <h3>คำแนะนำอัตโนมัติ</h3>
+      <ul id="advice" class="list-dot small"></ul>
+    </section>
+
+    <section class="card">
+      <h3>วิธีคำนวณ (ย่อ)</h3>
+      <p class="small muted">
+        ใช้อัตราส่วนงบ <b>3–10% ของรายได้/เดือน</b> (ปรับตามอายุ ผู้พึ่งพิง พฤติกรรมเสี่ยง และโฟกัส)
+        และตั้ง <b>ทุนชีวิตฐาน = หนี้รวม + รายได้ต่อปี × 3–5 ปี</b> ก่อนแตกเป็นแพ็ก A/B/C
+      </p>
+      <details class="small">
+        <summary class="link">ดูสูตร</summary>
+        <pre class="code"><code>budget% = auto(3–10%) หรือ manual slider
+lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5)
+A = 0.75×lifeBase | B = 1.00× | C = 1.25×
+CI (อายุ&lt;30: 200–800k, 30–44: 300–1000k, 45+: 400–1000k)
+PA = 300–700k + occupation boost
+Cash/Day (รัฐ: 1k/1.5k/2k | เอกชน: 0.8k/1.2k/1.5k)</code></pre>
+      </details>
+      <p class="tiny muted">หมายเหตุ: ไม่ใช่เบี้ยจริง/ใบเสนอราคา ผลประโยชน์และเบี้ยจริงขึ้นกับเงื่อนไขบริษัทและการพิจารณารับประกัน</p>
+    </section>
+  </main>
+
+  <div class="mobile-actions">
+    <button id="mobileCalc" class="btn-primary full">คำนวณ</button>
+    <button id="mobileShare" class="btn-outline">แชร์</button>
+  </div>
+
+  <footer class="site-footer tiny muted">
+    © 2025 GG‑NINEPLANNER · Decision support prototype — no server, no tracking
+  </footer>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
