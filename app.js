@@ -1,4 +1,4 @@
-// GG-NINEPLANNER — App (Tailwind + SweetAlert2)
+// GG-NINEPLANNER — App (Tailwind + SweetAlert2, hardened)
 (function () {
   'use strict';
 
@@ -10,26 +10,32 @@
   const fmtTHB = (n) =>
     isNaN(n) ? '—' :
     new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(n);
-  const iNum = (v) => Number.isFinite(+v) ? +v : 0;
+  const iNum = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
   const int0 = (v) => Math.max(0, Math.floor(iNum(v)));
   const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
   const roundTo = (n, step) => Math.round(n / step) * step;
 
-  // SweetAlert2 Toast (top-right)
-  const Toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 1800,
-    timerProgressBar: true
-  });
-  const toast = (icon, title) => Toast.fire({ icon, title });
+  // ---------- Alert/Toast (with fallback if SweetAlert2 missing) ----------
+  function hasSwal(){ return typeof window.Swal !== 'undefined'; }
+  const Toast = hasSwal()
+    ? Swal.mixin({ toast:true, position:'top-end', showConfirmButton:false, timer:1800, timerProgressBar:true })
+    : null;
+  function toast(icon, title){
+    if (Toast) return Toast.fire({ icon, title });
+    // fallback
+    console.log(`[${icon}] ${title}`);
+  }
+  function alertError(title, html){
+    if (hasSwal()) return Swal.fire({ icon:'error', title, html, confirmButtonText:'ตกลง' });
+    alert(`${title}\n\n${html.replace(/<[^>]+>/g,'')}`);
+  }
 
-  // Theme
+  // ---------- Theme ----------
   function applyTheme(pref) {
-    const dark =
-      pref === 'dark' ||
-      (!pref && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const dark = pref === 'dark' || (!pref && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark', dark);
     const icon = byId('themeIcon');
     if (icon) icon.textContent = dark ? '☀️' : '🌙';
@@ -41,31 +47,29 @@
   }
 
   // ---------- Schema & State ----------
-  const fields = [
+  const FIELD_SCHEMA = [
     { id: 'age', required: true, type: 'number', min: 18, max: 70 },
     { id: 'sex', required: false, type: 'select' },
-    { id: 'income', required: true, type: 'number', min: 1, max: 1000000 },
+    { id: 'income', required: true, type: 'number', min: 1, max: 1_000_000 },
     { id: 'dependents', required: false, type: 'number', min: 0, max: 10 },
     { id: 'smoker', required: false, type: 'select' },
     { id: 'occupation', required: false, type: 'select' },
     { id: 'hospital', required: false, type: 'select' },
-    { id: 'homeDebt', required: false, type: 'number', min: 0, max: 100000000 },
-    { id: 'carDebt', required: false, type: 'number', min: 0, max: 100000000 },
+    { id: 'homeDebt', required: false, type: 'number', min: 0, max: 100_000_000 },
+    { id: 'carDebt', required: false, type: 'number', min: 0, max: 100_000_000 },
     { id: 'priority', required: false, type: 'select' }
   ];
+  const FIELD_IDS = FIELD_SCHEMA.map(f => f.id);
 
   function save() {
     const d = {};
-    fields.forEach(f => {
-      const el = byId(f.id);
-      if (el) d[f.id] = el.value;
-    });
+    FIELD_SCHEMA.forEach(f => { const el = byId(f.id); if (el) d[f.id] = el.value; });
     localStorage.setItem('ggnp_form', JSON.stringify(d));
   }
   function load() {
     try {
       const d = JSON.parse(localStorage.getItem('ggnp_form') || '{}');
-      fields.forEach(f => {
+      FIELD_SCHEMA.forEach(f => {
         const el = byId(f.id);
         if (el && d[f.id] !== undefined) el.value = d[f.id];
       });
@@ -73,25 +77,33 @@
   }
 
   // ---------- Validation ----------
+  function labelOf(id) {
+    switch (id) {
+      case 'age': return 'อายุ';
+      case 'income': return 'รายได้ต่อเดือน';
+      case 'dependents': return 'ผู้อยู่ในอุปการะ';
+      case 'homeDebt': return 'หนี้บ้านคงเหลือ';
+      case 'carDebt': return 'หนี้รถคงเหลือ';
+      default: return id;
+    }
+  }
   function clearFieldError(id) {
     const el = byId(id);
     const err = byId('err-' + id);
-    el?.classList.remove('ring-2', 'ring-red-400', 'border-red-400');
+    el?.classList.remove('ring-2','ring-red-400','border-red-400');
     if (err) err.textContent = '';
   }
   function setFieldError(id, msg) {
     const el = byId(id);
     const err = byId('err-' + id);
-    el?.classList.add('ring-2', 'ring-red-400', 'border-red-400');
+    el?.classList.add('ring-2','ring-red-400','border-red-400');
     if (err) err.textContent = msg;
   }
   function validate() {
     const errors = [];
-    // reset
-    fields.forEach(f => clearFieldError(f.id));
+    FIELD_SCHEMA.forEach(f => clearFieldError(f.id));
 
-    // per-field
-    fields.forEach(f => {
+    FIELD_SCHEMA.forEach(f => {
       const el = byId(f.id);
       if (!el) return;
       const val = el.value;
@@ -117,40 +129,27 @@
       }
     });
 
-    // cross-field constraints
+    // cross-field
     const age = iNum(byId('age')?.value);
     const income = iNum(byId('income')?.value);
-    if (Number.isFinite(age) && Number.isFinite(income)) {
-      if (age < 18 || age > 70) {
-        errors.push('อายุต้องอยู่ 18–70 ปี');
-        setFieldError('age', '18–70 ปี');
-      }
-      if (income <= 0) {
-        errors.push('รายได้ต่อเดือนต้องมากกว่า 0');
-        setFieldError('income', 'กรอก > 0');
-      }
+    if (Number.isFinite(age) && (age < 18 || age > 70)) {
+      errors.push('อายุต้องอยู่ 18–70 ปี');
+      setFieldError('age', '18–70 ปี');
+    }
+    if (!Number.isFinite(income) || income <= 0) {
+      errors.push('รายได้ต่อเดือนต้องมากกว่า 0');
+      setFieldError('income', 'กรอก > 0');
     }
 
-    // banner + alert
     const banner = byId('errorBanner');
     if (errors.length) {
-      banner.classList.remove('hidden');
-      banner.innerHTML = '<b>ไม่สามารถคำนวณได้:</b> ' + errors.map(e => `<span class="ml-2">• ${e}</span>`).join(' ');
+      banner?.classList.remove('hidden');
+      if (banner) banner.innerHTML = '<b>ไม่สามารถคำนวณได้:</b> ' + errors.map(e => `<span class="ml-2">• ${e}</span>`).join(' ');
     } else {
-      banner.classList.add('hidden');
-      banner.innerHTML = '';
+      banner?.classList.add('hidden');
+      if (banner) banner.innerHTML = '';
     }
     return { ok: errors.length === 0, errors };
-  }
-  function labelOf(id) {
-    switch (id) {
-      case 'age': return 'อายุ';
-      case 'income': return 'รายได้ต่อเดือน';
-      case 'dependents': return 'ผู้อยู่ในอุปการะ';
-      case 'homeDebt': return 'หนี้บ้านคงเหลือ';
-      case 'carDebt': return 'หนี้รถคงเหลือ';
-      default: return id;
-    }
   }
 
   // ---------- UI Effects ----------
@@ -164,27 +163,13 @@
     };
     requestAnimationFrame(step);
   }
-  function showPlans() {
-    ['planA', 'planB', 'planC'].forEach((id, i) => {
-      const el = byId(id);
-      if (!el) return;
-      el.classList.add('show');
-      el.classList.remove('opacity-0', 'translate-y-2');
-      el.style.transitionDelay = `${i * 80}ms`;
-    });
-  }
 
   // ---------- Core Calc ----------
   function calc() {
     try {
       const v = validate();
       if (!v.ok) {
-        Swal.fire({
-          icon: 'error',
-          title: 'กรอกข้อมูลไม่ครบ/ไม่ถูกต้อง',
-          html: v.errors.map(e => `<div class="text-left">• ${e}</div>`).join(''),
-          confirmButtonText: 'ตกลง'
-        });
+        alertError('กรอกข้อมูลไม่ครบ/ไม่ถูกต้อง', v.errors.map(e => `<div class="text-left">• ${e}</div>`).join(''));
         return;
       }
 
@@ -218,39 +203,40 @@
       const rangeMin = income * 0.03, rangeMax = income * 0.10;
 
       const years = dependents >= 2 ? 5 : 3;
-      const lifeBase = roundTo(debt + (annual * years), 50000);
-      const lifeA = roundTo(lifeBase * 0.75, 50000);
+      const lifeBase = roundTo(debt + (annual * years), 50_000);
+      const lifeA = roundTo(lifeBase * 0.75, 50_000);
       const lifeB = lifeBase;
-      const lifeC = roundTo(lifeBase * 1.25, 50000);
+      const lifeC = roundTo(lifeBase * 1.25, 50_000);
 
-      // Critical Illness range by age
-      let ciA = 300000, ciB = 500000, ciC = 1000000;
-      if (age < 30) { ciA = 200000; ciB = 400000; ciC = 800000; }
-      if (age >= 45) { ciA = 400000; ciB = 600000; ciC = 1000000; }
+      // Critical Illness
+      let ciA = 300_000, ciB = 500_000, ciC = 1_000_000;
+      if (age < 30) { ciA = 200_000; ciB = 400_000; ciC = 800_000; }
+      if (age >= 45) { ciA = 400_000; ciB = 600_000; ciC = 1_000_000; }
 
-      // PA by occupation risk
-      const occBoost = occ === 'high' ? 200000 : (occ === 'med' ? 100000 : 0);
-      const paA = 300000 + occBoost, paB = 500000 + occBoost, paC = 700000 + occBoost;
+      // PA by occupation
+      const occBoost = occ === 'high' ? 200_000 : (occ === 'med' ? 100_000 : 0);
+      const paA = 300_000 + occBoost, paB = 500_000 + occBoost, paC = 700_000 + occBoost;
 
-      // Hospital cash by public/private
+      // Hospital Cash
       const cashA = hospital === 'public' ? 1000 : 800;
       const cashB = hospital === 'public' ? 1500 : 1200;
       const cashC = hospital === 'public' ? 2000 : 1500;
 
-      // Mix bars by priority (UI only)
+      // Mix bars
       let mix = { life: 50, ci: 25, pa: 15, cash: 10 };
       if (priority === 'health') mix = { life: 40, ci: 35, pa: 15, cash: 10 };
       if (priority === 'savings') mix = { life: 55, ci: 20, pa: 15, cash: 10 };
-      byId('barLife').style.width = mix.life + '%'; byId('pctLife').textContent = mix.life + '%';
-      byId('barCI').style.width = mix.ci + '%'; byId('pctCI').textContent = mix.ci + '%';
-      byId('barPA').style.width = mix.pa + '%'; byId('pctPA').textContent = mix.pa + '%';
-      byId('barCash').style.width = mix.cash + '%'; byId('pctCash').textContent = mix.cash + '%';
+      const setBar = (id, pct, label) => { const b = byId(id), t = byId(label); if (b) b.style.width = pct + '%'; if (t) t.textContent = pct + '%'; };
+      setBar('barLife', mix.life, 'pctLife');
+      setBar('barCI',   mix.ci,   'pctCI');
+      setBar('barPA',   mix.pa,   'pctPA');
+      setBar('barCash', mix.cash, 'pctCash');
 
       // KPIs
       animateNumber(byId('kpiBudget'), budget);
-      byId('kpiPct').textContent = `≈ ${(usedPerc * 100).toFixed(1)}% ของรายได้`;
-      byId('kpiRange').textContent = `${fmtTHB(rangeMin)} – ${fmtTHB(rangeMax)}`;
-      byId('kpiLife').textContent = fmtTHB(lifeBase);
+      const kpiPct = byId('kpiPct'); if (kpiPct) kpiPct.textContent = `≈ ${(usedPerc * 100).toFixed(1)}% ของรายได้`;
+      const kpiRange = byId('kpiRange'); if (kpiRange) kpiRange.textContent = `${fmtTHB(rangeMin)} – ${fmtTHB(rangeMax)}`;
+      const kpiLife = byId('kpiLife'); if (kpiLife) kpiLife.textContent = fmtTHB(lifeBase);
 
       // Plans
       const setTxt = (id, v) => { const el = byId(id); if (el) el.textContent = v; };
@@ -283,11 +269,11 @@
         ? 'สูบบุหรี่ → เบี้ยอาจสูงขึ้น ควรตรวจสุขภาพก่อนทำ'
         : 'ไม่สูบ → เบี้ยโดยรวมมักดีกว่า');
       if (income <= 20000) tips.push('คุมงบที่ 5–10% ของรายได้/เดือน แล้วค่อยเพิ่มเมื่อรายได้โต');
-      byId('advice').innerHTML = tips.map(t => `<li>${t}</li>`).join('');
+      const advice = byId('advice'); if (advice) advice.innerHTML = tips.map(t => `<li>${t}</li>`).join('');
 
-      // Recommend highlight (UI only)
-      ['planA', 'planB', 'planC'].forEach(id => byId(id)?.classList.add('card-fade', 'show'));
-      byId('b_badge').textContent = (usedPerc <= 0.085 && usedPerc > 0.055) ? 'เหมาะสมตามงบ' : 'ตัวเลือกกลาง';
+      // Recommend badge
+      const badge = byId('b_badge');
+      if (badge) badge.textContent = (usedPerc <= 0.085 && usedPerc > 0.055) ? 'เหมาะสมตามงบ' : 'ตัวเลือกกลาง';
 
       // Summary
       const summary = [
@@ -322,20 +308,20 @@
       bindSafe('themeBtn', 'click', toggleTheme);
       bindSafe('printBtn', 'click', () => window.print());
 
-      // Load state & bind inputs
+      // Load & bind fields
       load();
-      fields.forEach(f => {
-        const el = byId(f.id);
+      FIELD_IDS.forEach(id => {
+        const el = byId(id);
         if (!el) return;
-        el.addEventListener('input', () => {
-          clearFieldError(f.id);
-          setTimeout(calc, 0);
-        });
+        el.addEventListener('input', () => { clearFieldError(id); setTimeout(calc, 0); });
         el.addEventListener('change', save);
       });
 
+      // Enter -> calc
+      byId('form')?.addEventListener('submit', (e) => { e.preventDefault(); calc(); });
+
       // Advanced
-      bindSafe('toggleAdvanced', 'click', () => byId('advanced').classList.toggle('hidden'));
+      bindSafe('toggleAdvanced', 'click', () => byId('advanced')?.classList.toggle('hidden'));
       const auto = byId('autoBudget');
       const wrap = byId('manualBudgetWrap');
       const manual = byId('manualBudget');
@@ -343,19 +329,21 @@
       if (auto) {
         auto.addEventListener('change', () => {
           const on = auto.checked;
-          wrap.classList.toggle('opacity-50', on);
-          wrap.classList.toggle('pointer-events-none', on);
+          if (wrap) {
+            wrap.classList.toggle('opacity-50', on);
+            wrap.classList.toggle('pointer-events-none', on);
+          }
         });
       }
       if (manual) {
         manual.addEventListener('input', () => {
-          manualPct.textContent = (manual.value || '7') + '%';
+          if (manualPct) manualPct.textContent = (manual.value || '7') + '%';
           calc();
         });
       }
 
-      // Presets
-      $$('.[data-preset], [data-preset]').forEach(btn => {
+      // Presets (FIX: ถูกต้องคือ '[data-preset]' ไม่ใช่ '.[data-preset]')
+      $$('[data-preset]').forEach(btn => {
         btn.addEventListener('click', () => {
           const p = btn.getAttribute('data-preset');
           const set = (id, v) => { const el = byId(id); if (el) el.value = v; };
@@ -412,7 +400,7 @@
 
       bindSafe('exportBtn', 'click', () => {
         const data = {
-          fields: Object.fromEntries(fields.map(f => [f.id, byId(f.id)?.value])),
+          fields: Object.fromEntries(FIELD_IDS.map(id => [id, byId(id)?.value])),
           summary: document.body.dataset.summary || ''
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -422,21 +410,15 @@
       });
 
       bindSafe('resetBtn', 'click', () => {
-        Swal.fire({
-          icon: 'warning',
-          title: 'ล้างข้อมูลทั้งหมด?',
-          showCancelButton: true,
-          confirmButtonText: 'ล้าง',
-          cancelButtonText: 'ยกเลิก'
-        }).then(res => {
-          if (res.isConfirmed) {
-            localStorage.removeItem('ggnp_form');
-            location.reload();
-          }
-        });
+        if (hasSwal()){
+          Swal.fire({ icon:'warning', title:'ล้างข้อมูลทั้งหมด?', showCancelButton:true, confirmButtonText:'ล้าง', cancelButtonText:'ยกเลิก' })
+            .then(res => { if (res.isConfirmed) { localStorage.removeItem('ggnp_form'); location.reload(); } });
+        } else {
+          if (confirm('ล้างข้อมูลทั้งหมด?')) { localStorage.removeItem('ggnp_form'); location.reload(); }
+        }
       });
 
-      // Pre-calc
+      // Auto calc if minimal present
       if (byId('age')?.value && byId('income')?.value) calc();
     } catch (e) {
       console.error('Init error:', e);
