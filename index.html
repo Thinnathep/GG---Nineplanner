@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>GG-NINEPLANNER — Insurance Budget Planner</title>
+  <meta name="description" content="เครื่องคำนวณประกอบการตัดสินใจเลือกความคุ้มครองชีวิต/โรคร้าย/อุบัติเหตุ/ชดเชยรายวัน — มือถือ, Dark/Light, ไม่มีเซิร์ฟเวอร์, ไม่ใช่ใบเสนอราคา" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230ea5e9'/%3E%3Ctext x='50' y='58' font-size='46' text-anchor='middle' fill='white' font-family='sans-serif'%3EGG%3C/text%3E%3C/svg%3E">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SweetAlert2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Tailwind config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Noto Sans Thai","Inter","system-ui","-apple-system","Segoe UI","Roboto","sans-serif"],
+            mono: ["JetBrains Mono","ui-monospace","SFMono-Regular","Menlo","Consolas","monospace"],
+          },
+          colors: {
+            brand:{50:'#f0f9ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9',600:'#0284c7',700:'#0369a1',800:'#075985',900:'#0c4a6e'}
+          },
+          boxShadow:{ soft:'0 10px 30px rgba(2,6,23,0.25)' }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+  <!-- Header -->
+  <header class="sticky top-0 z-30 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/70 dark:bg-slate-950/70 backdrop-blur">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-white grid place-items-center shadow-soft">GG</div>
+        <div class="font-extrabold tracking-tight text-base sm:text-lg">GG-NINEPLANNER</div>
+        <span class="hidden sm:inline ml-2 text-[10px] sm:text-xs px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300">Insurance Budget Planner</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div id="cdnStatus" class="hidden sm:flex items-center gap-2 text-[10px] px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60">
+          CDN: <span id="stTw">TW—</span> · <span id="stSwal">SW—</span>
+        </div>
+        <button id="themeBtn" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-900 transition" aria-label="สลับโหมดแสง/มืด">
+          <span id="sun" class="hidden">☀️</span><span id="moon">🌙</span>
+        </button>
+        <button id="printBtn" class="hidden sm:inline px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white transition shadow-soft">พิมพ์ / PDF</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none bg-gradient-to-b from-brand-500/10 via-transparent to-transparent"></div>
+    <div class="mx-auto max-w-6xl px-4 py-6 sm:py-10">
+      <div class="grid md:grid-cols-2 gap-5 items-center">
+        <div class="space-y-3">
+          <h1 class="text-xl sm:text-3xl font-black leading-tight">วางงบและทุนคุ้มครองแบบเข้าใจง่าย — เปรียบเทียบ 3 แพ็ก</h1>
+          <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300">ตัวเลขใช้เพื่อ <b>ประกอบการตัดสินใจ</b> เท่านั้น ไม่ใช่ใบเสนอราคา และไม่เก็บข้อมูลบนเซิร์ฟเวอร์</p>
+          <div class="flex flex-wrap gap-2 text-[11px] sm:text-xs">
+            <span class="px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60">Mobile-First</span>
+            <span class="px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60">Dark/Light</span>
+            <span class="px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60">No Server</span>
+          </div>
+        </div>
+        <div class="rounded-2xl p-4 border border-slate-200/60 dark:border-slate-800/60 glass dark:glass-dark">
+          <div class="text-xs text-slate-500 dark:text-slate-400">ภาพรวม (อัปเดตอัตโนมัติ)</div>
+          <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60">
+              <div class="text-slate-500">งบแนะนำ/เดือน</div>
+              <div class="text-lg font-extrabold"><span id="kpiBudget">—</span></div>
+              <div class="text-[10px]" id="kpiPct">—</div>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60">
+              <div class="text-slate-500">ช่วงงบอ้างอิง</div>
+              <div class="text-lg font-extrabold"><span id="kpiRange">—</span></div>
+              <div class="text-[10px]">≈ 3–10% ของรายได้</div>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60 col-span-2 sm:col-span-1">
+              <div class="text-slate-500">ทุนชีวิตฐาน</div>
+              <div class="text-lg font-extrabold"><span id="kpiLife">—</span></div>
+              <div class="text-[10px]">หนี้รวม + รายได้ 3–5 ปี</div>
+            </div>
+          </div>
+          <button id="quickCalc" class="mt-3 w-full px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold shadow-soft">คำนวณด้วยข้อมูลตัวอย่าง</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="mx-auto max-w-6xl px-4 pb-24 sm:pb-16">
+    <!-- Input -->
+    <section class="rounded-2xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-800/60 glass dark:glass-dark">
+      <div class="flex items-center justify-between">
+        <h2 class="text-base sm:text-lg font-extrabold mb-2">🧾 ข้อมูลของคุณ</h2>
+        <button id="toggleAdvanced" class="text-xs px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60">โหมดขั้นสูง</button>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-4">กรอกเฉพาะที่จำเป็น — ระบบจะคำนวณอัตโนมัติเมื่อเปลี่ยนค่า</p>
+
+      <!-- Presets -->
+      <div class="flex flex-wrap gap-2 mb-3">
+        <button data-preset="teacher"  class="chip">ครู (20k, รพ.รัฐ)</button>
+        <button data-preset="freelance" class="chip">ฟรีแลนซ์ (15k, เอกชน)</button>
+        <button data-preset="family"   class="chip">มีลูก 2 คน</button>
+        <button data-preset="starter"  class="chip">เริ่มต้นงบต่ำ</button>
+      </div>
+
+      <form id="form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" novalidate>
+        <label class="lbl">อายุ (ปี)
+          <input id="age" type="number" min="18" max="70" inputmode="numeric" placeholder="18–70" required aria-describedby="ageHelp" class="ipt">
+          <small id="ageHelp" class="help">ประเมินทุนโรคร้าย/ความเสี่ยง</small>
+        </label>
+        <label class="lbl">เพศ
+          <select id="sex" class="ipt">
+            <option value="male">ชาย</option><option value="female">หญิง</option><option value="na">ไม่ระบุ</option>
+          </select>
+        </label>
+        <label class="lbl">รายได้ต่อเดือน (บาท)
+          <input id="income" type="number" step="500" inputmode="numeric" placeholder="เช่น 20000" required aria-describedby="incomeHelp" class="ipt">
+          <small id="incomeHelp" class="help">ระบบแนะนำงบ ~3–10% ของรายได้/เดือน</small>
+        </label>
+        <label class="lbl">ผู้อยู่ในอุปการะ (คน)
+          <input id="dependents" type="number" min="0" max="6" value="0" class="ipt">
+        </label>
+        <label class="lbl">สูบบุหรี่?
+          <select id="smoker" class="ipt"><option value="no">ไม่สูบ</option><option value="yes">สูบ</option></select>
+        </label>
+        <label class="lbl">อาชีพ
+          <select id="occupation" class="ipt">
+            <option value="low">เสี่ยงต่ำ (ครู/ออฟฟิศ)</option>
+            <option value="med">เสี่ยงกลาง (ขายของ/ขับรถ)</option>
+            <option value="high">เสี่ยงสูง (ภาคสนามหนัก)</option>
+          </select>
+        </label>
+        <label class="lbl">โรงพยาบาลที่ใช้บ่อย
+          <select id="hospital" class="ipt"><option value="public">รัฐ</option><option value="private">เอกชน</option></select>
+        </label>
+        <label class="lbl">หนี้บ้านคงเหลือ (บาท)
+          <input id="homeDebt" type="number" step="5000" inputmode="numeric" placeholder="เช่น 800000" class="ipt">
+        </label>
+        <label class="lbl">หนี้รถคงเหลือ (บาท)
+          <input id="carDebt" type="number" step="5000" inputmode="numeric" placeholder="เช่น 250000" class="ipt">
+        </label>
+        <label class="lbl">โฟกัสหลัก
+          <select id="priority" class="ipt">
+            <option value="risk">กันความเสี่ยง</option>
+            <option value="health">สุขภาพมาก่อน</option>
+            <option value="savings">ออมระยะยาว</option>
+          </select>
+        </label>
+      </form>
+
+      <!-- Advanced -->
+      <div id="advanced" class="hidden mt-3 rounded-xl border border-slate-200/60 dark:border-slate-800/60 p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="flex items-center gap-2 text-sm"><input id="autoBudget" type="checkbox" class="accent-brand-600" checked/> ให้ระบบแนะนำงบอัตโนมัติ</label>
+            <div class="mt-2 opacity-70" id="manualBudgetWrap">
+              <div class="flex items-center justify-between text-xs"><span>สัดส่วนงบต่อรายได้</span><span><b id="manualBudgetPct">7%</b></span></div>
+              <input id="manualBudget" type="range" min="3" max="10" step="0.5" value="7" class="w-full"/>
+              <div class="text-[11px] text-slate-500">ใช้เมื่อปิด “แนะนำงบอัตโนมัติ”</div>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs mb-1">สัดส่วนจัดสรรงบโดยประมาณ</div>
+            <div class="space-y-1 text-[11px]">
+              <div class="mixrow"><span class="w-24">Life</span><div class="bar"><div id="barLife" class="barin" style="width:50%"></div></div><span id="pctLife" class="w-10 text-right">50%</span></div>
+              <div class="mixrow"><span class="w-24">CI</span><div class="bar"><div id="barCI" class="barin" style="width:25%"></div></div><span id="pctCI" class="w-10 text-right">25%</span></div>
+              <div class="mixrow"><span class="w-24">PA</span><div class="bar"><div id="barPA" class="barin" style="width:15%"></div></div><span id="pctPA" class="w-10 text-right">15%</span></div>
+              <div class="mixrow"><span class="w-24">Cash</span><div class="bar"><div id="barCash" class="barin" style="width:10%"></div></div><span id="pctCash" class="w-10 text-right">10%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3 flex flex-wrap gap-2">
+        <button id="calcBtn"   class="btn-primary">คำนวณ</button>
+        <button id="copyBtn"   class="btn">คัดลอกสรุป</button>
+        <button id="shareBtn"  class="btn">แชร์</button>
+        <button id="exportBtn" class="btn">ส่งออก JSON</button>
+        <button id="resetBtn"  class="btn">ล้างข้อมูล</button>
+      </div>
+      <p class="mt-3 disclaimer">ข้อมูลนี้ใช้เพื่อ <b>ประกอบการตัดสินใจ</b> เท่านั้น ไม่ใช่ข้อมูลจริง/ใบเสนอราคา ผลประโยชน์และเบี้ยจริงขึ้นกับเงื่อนไขบริษัทและการพิจารณารับประกัน สอบถามรายละเอียดได้ที่เพจ <b>GG-NinePlanner</b>.</p>
+    </section>
+
+    <!-- Results -->
+    <section id="results" class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-3" aria-live="polite">
+      <article id="planA" class="card">
+        <div class="flex items-center justify-between">
+          <h3 class="cardtitle">แพ็ก A — เริ่มต้น</h3>
+          <span class="badge">งบต่ำ</span>
+        </div>
+        <p class="carddesc">เน้นปิดหนี้หลัก + กันเสี่ยงหนักก่อน</p>
+        <ul class="ulist">
+          <li class="row"><span>Term Life</span><b id="a_life">—</b></li>
+          <li class="row"><span>Critical Illness</span><b id="a_ci">—</b></li>
+          <li class="row"><span>PA</span><b id="a_pa">—</b></li>
+          <li class="row"><span>Hospital Cash</span><b id="a_cash">—</b></li>
+        </ul>
+        <details class="mt-2"><summary class="sum">คำอธิบาย</summary><div id="a_hint" class="hint">—</div></details>
+      </article>
+
+      <article id="planB" class="card ring-1 ring-transparent border-brand-300/60 dark:border-brand-700/40">
+        <div class="flex items-center justify-between">
+          <h3 class="cardtitle">แพ็ก B — สมดุล</h3>
+          <span id="b_badge" class="badge">ตัวเลือกกลาง</span>
+        </div>
+        <p class="carddesc">คุ้ม 4 มิติ: ชีวิต / โรคร้าย / อุบัติเหตุ / รายได้หาย</p>
+        <ul class="ulist">
+          <li class="row"><span>Term Life</span><b id="b_life">—</b></li>
+          <li class="row"><span>Critical Illness</span><b id="b_ci">—</b></li>
+          <li class="row"><span>PA</span><b id="b_pa">—</b></li>
+          <li class="row"><span>Hospital Cash</span><b id="b_cash">—</b></li>
+        </ul>
+        <details class="mt-2"><summary class="sum">คำอธิบาย</summary><div id="b_hint" class="hint">—</div></details>
+      </article>
+
+      <article id="planC" class="card">
+        <div class="flex items-center justify-between">
+          <h3 class="cardtitle">แพ็ก C — เพิ่มความคุ้มครอง</h3>
+          <span class="badge">งบสูง</span>
+        </div>
+        <p class="carddesc">เพิ่มโรคร้ายแรง + ชดเชยรายวัน</p>
+        <ul class="ulist">
+          <li class="row"><span>Term Life</span><b id="c_life">—</b></li>
+          <li class="row"><span>Critical Illness</span><b id="c_ci">—</b></li>
+          <li class="row"><span>PA</span><b id="c_pa">—</b></li>
+          <li class="row"><span>Hospital Cash</span><b id="c_cash">—</b></li>
+        </ul>
+        <details class="mt-2"><summary class="sum">คำอธิบาย</summary><div id="c_hint" class="hint">—</div></details>
+      </article>
+    </section>
+
+    <!-- Guidance -->
+    <section class="mt-4 grid md:grid-cols-2 gap-3">
+      <div class="card">
+        <h3 class="cardtitle mb-2">คำแนะนำอัตโนมัติ</h3>
+        <ul id="advice" class="list-disc list-inside text-xs sm:text-sm space-y-1 text-slate-600 dark:text-slate-300"></ul>
+      </div>
+      <div class="card">
+        <h3 class="cardtitle mb-2">วิธีคำนวณ (ย่อ)</h3>
+        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">ใช้อัตราส่วนงบ <b>3–10% ของรายได้/เดือน</b> (ปรับตามอายุ ผู้พึ่งพิง พฤติกรรมเสี่ยง และโฟกัส) และตั้ง <b>ทุนชีวิตฐาน = หนี้รวม + รายได้ต่อปี × 3–5 ปี</b> ก่อนแตกเป็นแพ็ก A/B/C</p>
+        <details class="mt-2 text-xs sm:text-sm">
+          <summary class="sum">ดูสูตร</summary>
+          <pre class="code"><code class="font-mono">budget% = auto(3–10%) or manual slider
+lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5)
+A = 0.75×lifeBase | B = 1.00× | C = 1.25×
+CI (อายุ&lt;30: 200–800k, 30–44: 300–1000k, 45+: 400–1000k)
+PA = 300–700k + occupation boost
+Cash/Day (รัฐ: 1k/1.5k/2k | เอกชน: 0.8k/1.2k/1.5k)</code></pre>
+        </details>
+      </div>
+    </section>
+
+    <!-- Disclaimer -->
+    <section class="mt-4">
+      <div class="card">
+        <h3 class="cardtitle mb-2">หมายเหตุ</h3>
+        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">ข้อมูลนี้จัดทำเพื่อ <b>ประกอบการตัดสินใจ</b> เบื้องต้นเท่านั้น ไม่ใช่เบี้ยจริง/ใบเสนอราคา ผลประโยชน์และเบี้ยจริงขึ้นกับอายุ เพศ สุขภาพ อาชีพ และเงื่อนไขบริษัท รวมถึงข้อกำหนดของหน่วยงานกำกับ</p>
+        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1">ขอรายละเอียดและใบเสนอราคาได้ที่เพจ <b>GG-NinePlanner</b>.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Sticky mobile action bar -->
+  <div class="sm:hidden fixed bottom-0 inset-x-0 z-40 p-3 pt-1 bg-gradient-to-t from-slate-950/70 to-transparent">
+    <div class="max-w-6xl mx-auto flex gap-2">
+      <button id="mobileCalc" class="flex-1 px-4 py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold shadow-soft">คำนวณ</button>
+      <button id="mobileShare" class="px-4 py-3 rounded-2xl border border-slate-700/60 bg-slate-900/60 text-white">แชร์</button>
+    </div>
+  </div>
+
+  <footer class="border-t border-slate-200/60 dark:border-slate-800/60 py-6 text-center text-[11px] sm:text-xs text-slate-500">
+    © 2025 GG-NINEPLANNER · Decision support prototype — no server, no tracking
+  </footer>
+
+  <script src="./script.js"></script>
+</body>
+</html>
