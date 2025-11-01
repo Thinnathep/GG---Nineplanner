@@ -4,16 +4,22 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GG-NINEPLANNER — Insurance Budget Planner</title>
-  <meta name="description" content="โปรโตไทป์ช่วยคำนวณงบและทุนคุ้มครองเบื้องต้น เพื่อประกอบการตัดสินใจ (ไม่ใช่ใบเสนอราคา)" />
+  <meta name="description" content="โปรโตไทป์ช่วยคำนวณงบ/ทุนคุ้มครองเบื้องต้น เพื่อประกอบการตัดสินใจ (ไม่ใช่ใบเสนอราคา)" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230ea5e9'/%3E%3Ctext x='50' y='58' font-size='46' text-anchor='middle' fill='white' font-family='sans-serif'%3EGG%3C/text%3E%3C/svg%3E">
 
-  <!-- Tailwind CDN -->
+  <!-- Tailwind via CDN -->
+  <script>
+    window.tailwind = undefined;
+    window.tailwind = window.tailwind || {};
+    // Dark mode via 'class'
+    tailwind.config = { darkMode: 'class' };
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <!-- Custom CSS (แอนิเมชัน/ยูทิลิตี้เล็กๆ) -->
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="./styles.css?v=20251101" />
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 transition-colors">
@@ -87,10 +93,10 @@
 
       <!-- Presets -->
       <div class="flex flex-wrap gap-2 mt-3">
-        <button data-preset="teacher" class="px-3 py-1.5 rounded-lg border text-xs border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-700 hover:border-sky-400">ครู (20k/รัฐ)</button>
-        <button data-preset="freelance" class="px-3 py-1.5 rounded-lg border text-xs border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-700 hover:border-sky-400">ฟรีแลนซ์ (15k/เอกชน)</button>
-        <button data-preset="family" class="px-3 py-1.5 rounded-lg border text-xs border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-700 hover:border-sky-400">มีลูก 2</button>
-        <button data-preset="starter" class="px-3 py-1.5 rounded-lg border text-xs border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-700 hover:border-sky-400">เริ่มต้นงบต่ำ</button>
+        <button data-preset="teacher" class="btn-chip">ครู (20k/รัฐ)</button>
+        <button data-preset="freelance" class="btn-chip">ฟรีแลนซ์ (15k/เอกชน)</button>
+        <button data-preset="family" class="btn-chip">มีลูก 2</button>
+        <button data-preset="starter" class="btn-chip">เริ่มต้นงบต่ำ</button>
       </div>
 
       <form id="form" novalidate class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
@@ -98,14 +104,14 @@
         <div>
           <label for="age" class="font-semibold text-sm">อายุ (ปี) *</label>
           <input id="age" type="number" min="18" max="70" inputmode="numeric" placeholder="18–70"
-                 class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400">
-          <p class="text-xs text-slate-500 mt-1">ใช้ประเมินความเสี่ยง/ทุนโรคร้าย</p>
-          <p id="err-age" class="text-[11px] text-red-500 mt-1"></p>
+                 class="input">
+          <p class="hint">ใช้ประเมินความเสี่ยง/ทุนโรคร้าย</p>
+          <p id="err-age" class="err"></p>
         </div>
         <!-- เพศ -->
         <div>
           <label for="sex" class="font-semibold text-sm">เพศ</label>
-          <select id="sex" class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400">
+          <select id="sex" class="input">
             <option value="male">ชาย</option>
             <option value="female">หญิง</option>
             <option value="na">ไม่ระบุ</option>
@@ -114,21 +120,19 @@
         <!-- รายได้ -->
         <div>
           <label for="income" class="font-semibold text-sm">รายได้ต่อเดือน (บาท) *</label>
-          <input id="income" type="number" step="500" inputmode="numeric" placeholder="เช่น 20000"
-                 class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400">
-          <p class="text-xs text-slate-500 mt-1">ระบบแนะนำงบ ~3–10% ของรายได้/เดือน</p>
-          <p id="err-income" class="text-[11px] text-red-500 mt-1"></p>
+          <input id="income" type="number" step="500" inputmode="numeric" placeholder="เช่น 20000" class="input">
+          <p class="hint">ระบบแนะนำงบ ~3–10% ของรายได้/เดือน</p>
+          <p id="err-income" class="err"></p>
         </div>
         <!-- ผู้พึ่งพิง -->
         <div>
           <label for="dependents" class="font-semibold text-sm">ผู้อยู่ในอุปการะ (คน)</label>
-          <input id="dependents" type="number" min="0" max="6" value="0"
-                 class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400">
+          <input id="dependents" type="number" min="0" max="10" value="0" class="input">
         </div>
         <!-- สูบบุหรี่ -->
         <div>
           <label for="smoker" class="font-semibold text-sm">สูบบุหรี่?</label>
-          <select id="smoker" class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400">
+          <select id="smoker" class="input">
             <option value="no">ไม่สูบ</option>
             <option value="yes">สูบ</option>
           </select>
@@ -136,7 +140,7 @@
         <!-- อาชีพ -->
         <div>
           <label for="occupation" class="font-semibold text-sm">อาชีพ</label>
-          <select id="occupation" class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400">
+          <select id="occupation" class="input">
             <option value="low">เสี่ยงต่ำ (ครู/ออฟฟิศ)</option>
             <option value="med">เสี่ยงกลาง (ขายของ/ขับรถ)</option>
             <option value="high">เสี่ยงสูง (ภาคสนามหนัก)</option>
@@ -145,7 +149,7 @@
         <!-- รพ. -->
         <div>
           <label for="hospital" class="font-semibold text-sm">โรงพยาบาลที่ใช้บ่อย</label>
-          <select id="hospital" class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400">
+          <select id="hospital" class="input">
             <option value="public">รัฐ</option>
             <option value="private">เอกชน</option>
           </select>
@@ -153,19 +157,17 @@
         <!-- หนี้บ้าน -->
         <div>
           <label for="homeDebt" class="font-semibold text-sm">หนี้บ้านคงเหลือ (บาท)</label>
-          <input id="homeDebt" type="number" step="5000" placeholder="เช่น 800000"
-                 class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400">
+          <input id="homeDebt" type="number" step="5000" placeholder="เช่น 800000" class="input">
         </div>
         <!-- หนี้รถ -->
         <div>
           <label for="carDebt" class="font-semibold text-sm">หนี้รถคงเหลือ (บาท)</label>
-          <input id="carDebt" type="number" step="5000" placeholder="เช่น 250000"
-                 class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400">
+          <input id="carDebt" type="number" step="5000" placeholder="เช่น 250000" class="input">
         </div>
         <!-- โฟกัส -->
         <div>
           <label for="priority" class="font-semibold text-sm">โฟกัสหลัก</label>
-          <select id="priority" class="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400">
+          <select id="priority" class="input">
             <option value="risk">กันความเสี่ยง</option>
             <option value="health">สุขภาพมาก่อน</option>
             <option value="savings">ออมระยะยาว</option>
@@ -202,11 +204,11 @@
 
       <!-- Actions -->
       <div class="flex flex-wrap gap-2 mt-4">
-        <button id="calcBtn" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold shadow">คำนวณ</button>
-        <button id="copyBtn" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">คัดลอกสรุป</button>
-        <button id="shareBtn" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">แชร์</button>
-        <button id="exportBtn" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">ส่งออก JSON</button>
-        <button id="resetBtn" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700">ล้างข้อมูล</button>
+        <button id="calcBtn" class="btn-primary">คำนวณ</button>
+        <button id="copyBtn" class="btn-ghost">คัดลอกสรุป</button>
+        <button id="shareBtn" class="btn-ghost">แชร์</button>
+        <button id="exportBtn" class="btn-ghost">ส่งออก JSON</button>
+        <button id="resetBtn" class="btn-ghost">ล้างข้อมูล</button>
       </div>
 
       <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-3">
@@ -220,14 +222,14 @@
       <article id="planA" class="card-fade bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 opacity-0 translate-y-2">
         <div class="flex items-center justify-between">
           <h3 class="font-bold">แพ็ก A — เริ่มต้น</h3>
-          <span class="px-2 py-0.5 rounded-full text-xs border border-slate-200 dark:border-slate-700">งบต่ำ</span>
+          <span class="chip">งบต่ำ</span>
         </div>
         <p class="text-xs text-slate-500 mt-1">เน้นปิดหนี้หลัก + กันเสี่ยงหนักก่อน</p>
         <ul class="divide-y divide-slate-200 dark:divide-slate-700 text-sm mt-3">
-          <li class="flex items-center justify-between py-2"><span>Term Life</span><b id="a_life">—</b></li>
-          <li class="flex items-center justify-between py-2"><span>Critical Illness</span><b id="a_ci">—</b></li>
-          <li class="flex items-center justify-between py-2"><span>PA</span><b id="a_pa">—</b></li>
-          <li class="flex items-center justify-between py-2"><span>Hospital Cash</span><b id="a_cash">—</b></li>
+          <li class="row"><span>Term Life</span><b id="a_life">—</b></li>
+          <li class="row"><span>Critical Illness</span><b id="a_ci">—</b></li>
+          <li class="row"><span>PA</span><b id="a_pa">—</b></li>
+          <li class="row"><span>Hospital Cash</span><b id="a_cash">—</b></li>
         </ul>
         <details class="text-xs mt-2">
           <summary class="text-sky-500 hover:underline cursor-pointer">คำอธิบาย</summary>
@@ -239,14 +241,14 @@
       <article id="planB" class="card-fade bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 opacity-0 translate-y-2">
         <div class="flex items-center justify-between">
           <h3 class="font-bold">แพ็ก B — สมดุล</h3>
-          <span id="b_badge" class="px-2 py-0.5 rounded-full text-xs border border-slate-200 dark:border-slate-700">ตัวเลือกกลาง</span>
+          <span id="b_badge" class="chip">ตัวเลือกกลาง</span>
         </div>
         <p class="text-xs text-slate-500 mt-1">คุ้ม 4 มิติ: ชีวิต / โรคร้าย / อุบัติเหตุ / รายได้หาย</p>
         <ul class="divide-y divide-slate-200 dark:divide-slate-700 text-sm mt-3">
-          <li class="flex items-center justify-between py-2"><span>Term Life</span><b id="b_life">—</b></li>
-          <li class="flex items-center justify-between py-2"><span>Critical Illness</span><b id="b_ci">—</b></li>
-          <li class="flex items-center justify-between py-2"><span>PA</span><b id="b_pa">—</b></li>
-          <li class="flex items-center justify-between py-2"><span>Hospital Cash</span><b id="b_cash">—</b></li>
+          <li class="row"><span>Term Life</span><b id="b_life">—</b></li>
+          <li class="row"><span>Critical Illness</span><b id="b_ci">—</b></li>
+          <li class="row"><span>PA</span><b id="b_pa">—</b></li>
+          <li class="row"><span>Hospital Cash</span><b id="b_cash">—</b></li>
         </ul>
         <details class="text-xs mt-2">
           <summary class="text-sky-500 hover:underline cursor-pointer">คำอธิบาย</summary>
@@ -258,14 +260,14 @@
       <article id="planC" class="card-fade bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 opacity-0 translate-y-2">
         <div class="flex items-center justify-between">
           <h3 class="font-bold">แพ็ก C — เพิ่มความคุ้มครอง</h3>
-          <span class="px-2 py-0.5 rounded-full text-xs border border-slate-200 dark:border-slate-700">งบสูง</span>
+          <span class="chip">งบสูง</span>
         </div>
         <p class="text-xs text-slate-500 mt-1">เพิ่มโรคร้ายแรง + ชดเชยรายวัน</p>
         <ul class="divide-y divide-slate-200 dark:divide-slate-700 text-sm mt-3">
-          <li class="flex items-center justify-between py-2"><span>Term Life</span><b id="c_life">—</b></li>
-          <li class="flex items-center justify-between py-2"><span>Critical Illness</span><b id="c_ci">—</b></li>
-          <li class="flex items-center justify-between py-2"><span>PA</span><b id="c_pa">—</b></li>
-          <li class="flex items-center justify-between py-2"><span>Hospital Cash</span><b id="c_cash">—</b></li>
+          <li class="row"><span>Term Life</span><b id="c_life">—</b></li>
+          <li class="row"><span>Critical Illness</span><b id="c_ci">—</b></li>
+          <li class="row"><span>PA</span><b id="c_pa">—</b></li>
+          <li class="row"><span>Hospital Cash</span><b id="c_cash">—</b></li>
         </ul>
         <details class="text-xs mt-2">
           <summary class="text-sky-500 hover:underline cursor-pointer">คำอธิบาย</summary>
@@ -280,9 +282,6 @@
       <ul id="advice" class="list-disc pl-5 text-sm mt-2"></ul>
     </section>
   </main>
-
-  <!-- Toast host (ไม่บังคับใช้ เพราะเราใช้ SweetAlert2 Toast) -->
-  <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2"></div>
 
   <!-- App -->
   <script src="./app.js?v=20251101" defer></script>
