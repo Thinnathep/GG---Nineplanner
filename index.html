@@ -1,10 +1,11 @@
 <!DOCTYPE html><html lang="th" class="dark">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GG‑NINEPLANNER — Insurance Budget Planner</title>
-  <meta name="description" content="เครื่องคำนวณวางแผนคุ้มครองประกัน (ชีวิต/โรคร้าย/อุบัติเหตุ/ชดเชยรายวัน) สำหรับทุกงบ — ใช้ประกอบการตัดสินใจ ไม่ใช่เบี้ยจริง" />
-  <!-- Tailwind Play CDN (prototype only) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>GG‑NINEPLANNER — Insurance Budget Planner (Mobile‑First)</title>
+  <meta name="description" content="เครื่องคำนวณวางแผนคุ้มครอง (ชีวิต/โรคร้าย/อุบัติเหตุ/ชดเชยรายวัน) เพื่อประกอบการตัดสินใจ — รองรับมือถือ, ไม่เก็บข้อมูล, ไม่ใช่เบี้ยจริง" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230ea5e9'/%3E%3Ctext x='50' y='58' font-size='46' text-anchor='middle' fill='white' font-family='sans-serif'%3EGG%3C/text%3E%3C/svg%3E">
+  <!-- Tailwind CDN (prototype) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -16,69 +17,56 @@
             mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
           },
           colors: {
-            brand: {
-              50: '#effaff', 100:'#dff3ff', 200:'#bfe7ff', 300:'#99d9ff', 400:'#5cc6ff', 500:'#1fb2ff', 600:'#1090d6', 700:'#0b71a8', 800:'#075178', 900:'#053a56'
-            },
+            brand: { 50:'#f0f9ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9',600:'#0284c7',700:'#0369a1',800:'#075985',900:'#0c4a6e' }
           },
-          boxShadow: {
-            soft: '0 10px 30px rgba(2,6,23,0.25)'
-          },
+          boxShadow: { soft: '0 10px 30px rgba(2,6,23,0.25)' },
           keyframes: {
-            floaty: { '0%,100%':{ transform:'translateY(0)' }, '50%':{ transform:'translateY(-6px)'} },
-            fadeUp: { '0%':{ opacity:0, transform:'translateY(12px)' }, '100%':{ opacity:1, transform:'translateY(0)'} },
+            floaty: { '0%,100%':{ transform:'translateY(0)' }, '50%':{ transform:'translateY(-6px)' } },
+            fadeUp: { '0%':{ opacity:0, transform:'translateY(12px)' }, '100%':{ opacity:1, transform:'translateY(0)' } }
           },
-          animation: {
-            floaty: 'floaty 5s ease-in-out infinite',
-            fadeUp: 'fadeUp .6s ease forwards'
-          }
+          animation: { floaty:'floaty 6s ease-in-out infinite', fadeUp:'fadeUp .5s ease forwards' }
         }
       }
     }
   </script>
   <style>
-    /* subtle gradients */
-    .bg-grid {
-      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.08) 1px, transparent 0);
-      background-size: 18px 18px;
-    }
-    .glass { backdrop-filter: blur(10px); background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)); }
-    .glass-b { backdrop-filter: blur(6px); background: linear-gradient(180deg, rgba(2,6,23,.55), rgba(2,6,23,.35)); }
+    .glass{backdrop-filter:blur(10px); background:linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.35))}
+    .glass-dark{backdrop-filter:blur(10px); background:linear-gradient(180deg, rgba(2,6,23,.65), rgba(2,6,23,.35))}
+    @media (prefers-reduced-motion: reduce){ *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important } }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
-  <!-- Top bar -->
-  <header class="sticky top-0 z-30 border-b border-slate-200/40 dark:border-slate-800/60 bg-white/80 dark:bg-slate-950/70 glass">
+  <!-- Header -->
+  <header class="sticky top-0 z-30 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/70 dark:bg-slate-950/70 backdrop-blur">
     <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 text-white grid place-items-center shadow-soft animate-floaty" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5"><path fill="currentColor" d="M12 2l8 4v6c0 5-3.4 9.7-8 10c-4.6-.3-8-5-8-10V6l8-4Zm0 3.3L7 7.6v4.8c0 3.7 2.5 7.4 5 7.8c2.5-.4 5-4.1 5-7.8V7.6l-5-2.3Zm0 3.2a1.5 1.5 0 0 1 1.06 2.56l-1.8 1.8a1.5 1.5 0 0 1-2.12-2.12l1.8-1.8c.28-.28.66-.44 1.06-.44Z"/></svg>
-        </div>
-        <div class="font-extrabold tracking-tight text-lg">GG‑NINEPLANNER</div>
-        <span class="ml-2 text-xs px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300">Insurance Budget Planner</span>
+        <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-white grid place-items-center shadow-soft animate-floaty" aria-hidden="true">GG</div>
+        <div class="font-extrabold tracking-tight text-base sm:text-lg">GG‑NINEPLANNER</div>
+        <span class="hidden sm:inline ml-2 text-[10px] sm:text-xs px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300">Insurance Budget Planner</span>
       </div>
       <div class="flex items-center gap-2">
         <button id="themeBtn" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-900 transition" aria-label="สลับโหมดแสง/มืด">
           <span id="sun" class="hidden" aria-hidden="true">☀️</span>
           <span id="moon" aria-hidden="true">🌙</span>
         </button>
-        <button id="printBtn" class="px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-white transition shadow-soft">พิมพ์ / PDF</button>
+        <button id="printBtn" class="hidden sm:inline px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white transition shadow-soft">พิมพ์ / PDF</button>
       </div>
     </div>
   </header>  <!-- Hero -->  <section class="relative overflow-hidden">
     <div class="absolute inset-0 pointer-events-none bg-gradient-to-b from-brand-500/10 via-transparent to-transparent"></div>
-    <div class="mx-auto max-w-6xl px-4 py-10 md:py-14">
-      <div class="grid md:grid-cols-2 gap-6 items-center">
-        <div class="space-y-4 animate-fadeUp">
-          <h1 class="text-2xl md:text-4xl font-black leading-tight">วางแผนคุ้มครองที่ <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-brand-600">เรียบง่าย • จริงใจ • เข้าใจงบ</span></h1>
-          <p class="text-slate-600 dark:text-slate-300">เครื่องคำนวณเพื่อ <b>ประกอบการตัดสินใจ</b> เลือกแนวทางความคุ้มครอง (ชีวิต/โรคร้าย/อุบัติเหตุ/ชดเชยรายวัน) สำหรับทุกระดับรายได้ — ไม่ใช่ใบเสนอราคา</p>
-          <div class="flex flex-wrap gap-2 text-xs">
+    <div class="mx-auto max-w-6xl px-4 py-6 sm:py-10">
+      <div class="grid md:grid-cols-2 gap-5 items-center">
+        <div class="space-y-3 animate-fadeUp">
+          <h1 class="text-xl sm:text-3xl font-black leading-tight">วางแผนคุ้มครองที่ <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-brand-600">เรียบง่าย • จริงใจ • เข้าใจงบ</span></h1>
+          <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300">เครื่องคำนวณเพื่อ <b>ประกอบการตัดสินใจ</b> เลือกแนวทางความคุ้มครอง (ชีวิต/โรคร้าย/อุบัติเหตุ/ชดเชยรายวัน) สำหรับทุกระดับรายได้ — <b>ไม่ใช่เบี้ยจริง</b> และไม่เก็บข้อมูลขึ้นเซิร์ฟเวอร์</p>
+          <div class="flex flex-wrap gap-2 text-[11px] sm:text-xs">
             <span class="px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60">ไม่ขายฝัน</span>
             <span class="px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60">เน้นข้อมูลจริง</span>
             <span class="px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60">ทุกคนเท่าเทียม</span>
           </div>
         </div>
-        <div class="rounded-2xl bg-white/70 dark:bg-slate-900/60 glass p-4 border border-slate-200/60 dark:border-slate-800/60 shadow-soft animate-fadeUp" style="animation-delay:.1s">
-          <div class="text-sm text-slate-500 dark:text-slate-400">เริ่มต้นเร็ว</div>
+        <div class="rounded-2xl p-4 border border-slate-200/60 dark:border-slate-800/60 glass dark:glass-dark animate-fadeUp" style="animation-delay:.08s">
+          <div class="text-xs text-slate-500 dark:text-slate-400">เริ่มต้นเร็ว</div>
           <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
             <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60">
               <div class="text-slate-500">ช่วงงบแนะนำ</div>
@@ -93,54 +81,56 @@
         </div>
       </div>
     </div>
-  </section>  <main class="mx-auto max-w-6xl px-4 pb-16">
+  </section>  <main class="mx-auto max-w-6xl px-4 pb-24 sm:pb-16">
     <!-- Input Card -->
-    <section class="rounded-2xl p-5 md:p-6 border border-slate-200/60 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 glass animate-fadeUp" style="animation-delay:.15s">
-      <h2 class="text-lg font-extrabold mb-2">🧾 ข้อมูลของคุณ</h2>
-      <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">กรอกเฉพาะที่จำเป็น — ทำงานบนเครื่องของคุณ ไม่เก็บข้อมูลขึ้นเซิร์ฟเวอร์</p>
-      <form id="form" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <label class="flex flex-col gap-1">อายุ (ปี)
-          <input id="age" type="number" min="18" max="70" placeholder="เช่น 38" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950" required />
+    <section class="rounded-2xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-800/60 glass dark:glass-dark animate-fadeUp" style="animation-delay:.12s">
+      <h2 class="text-base sm:text-lg font-extrabold mb-2">🧾 ข้อมูลของคุณ</h2>
+      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-4">กรอกเฉพาะที่จำเป็น — ทำงานบนเครื่องของคุณ ไม่เก็บข้อมูลขึ้นเซิร์ฟเวอร์</p>
+      <form id="form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <label class="flex flex-col gap-1 text-sm">อายุ (ปี)
+          <input id="age" type="number" min="18" max="70" inputmode="numeric" placeholder="เช่น 38" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950" required />
+          <small class="text-[11px] text-slate-500">18–70 ปี</small>
         </label>
-        <label class="flex flex-col gap-1">เพศ
+        <label class="flex flex-col gap-1 text-sm">เพศ
           <select id="sex" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950">
             <option value="male">ชาย</option>
             <option value="female">หญิง</option>
             <option value="na">ไม่ระบุ</option>
           </select>
         </label>
-        <label class="flex flex-col gap-1">รายได้ต่อเดือน (บาท)
-          <input id="income" type="number" step="500" placeholder="เช่น 20000" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950" required />
+        <label class="flex flex-col gap-1 text-sm">รายได้ต่อเดือน (บาท)
+          <input id="income" type="number" step="500" inputmode="numeric" placeholder="เช่น 20000" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950" required />
+          <small class="text-[11px] text-slate-500">แนะนำกันงบ 3–10% ของรายได้/เดือน</small>
         </label>
-        <label class="flex flex-col gap-1">ผู้อยู่ในอุปการะ (คน)
+        <label class="flex flex-col gap-1 text-sm">ผู้อยู่ในอุปการะ (คน)
           <input id="dependents" type="number" min="0" max="6" value="0" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950" />
         </label>
-        <label class="flex flex-col gap-1">สูบบุหรี่?
+        <label class="flex flex-col gap-1 text-sm">สูบบุหรี่?
           <select id="smoker" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950">
             <option value="no">ไม่สูบ</option>
             <option value="yes">สูบ</option>
           </select>
         </label>
-        <label class="flex flex-col gap-1">อาชีพ
+        <label class="flex flex-col gap-1 text-sm">อาชีพ
           <select id="occupation" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950">
             <option value="low">เสี่ยงต่ำ (ครู/ออฟฟิศ)</option>
             <option value="med">เสี่ยงกลาง (ขายของ/ขับรถ)</option>
             <option value="high">เสี่ยงสูง (ภาคสนามหนัก)</option>
           </select>
         </label>
-        <label class="flex flex-col gap-1">โรงพยาบาลที่ใช้บ่อย
+        <label class="flex flex-col gap-1 text-sm">โรงพยาบาลที่ใช้บ่อย
           <select id="hospital" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950">
             <option value="public">รัฐ</option>
             <option value="private">เอกชน</option>
           </select>
         </label>
-        <label class="flex flex-col gap-1">หนี้บ้านคงเหลือ (บาท)
-          <input id="homeDebt" type="number" step="5000" placeholder="เช่น 800000" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950" />
+        <label class="flex flex-col gap-1 text-sm">หนี้บ้านคงเหลือ (บาท)
+          <input id="homeDebt" type="number" step="5000" inputmode="numeric" placeholder="เช่น 800000" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950" />
         </label>
-        <label class="flex flex-col gap-1">หนี้รถคงเหลือ (บาท)
-          <input id="carDebt" type="number" step="5000" placeholder="เช่น 250000" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950" />
+        <label class="flex flex-col gap-1 text-sm">หนี้รถคงเหลือ (บาท)
+          <input id="carDebt" type="number" step="5000" inputmode="numeric" placeholder="เช่น 250000" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950" />
         </label>
-        <label class="flex flex-col gap-1">โฟกัสหลัก
+        <label class="flex flex-col gap-1 text-sm">โฟกัสหลัก
           <select id="priority" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 bg-white dark:bg-slate-950">
             <option value="risk">กันความเสี่ยง</option>
             <option value="health">สุขภาพมาก่อน</option>
@@ -148,86 +138,103 @@
           </select>
         </label>
       </form>
-      <div class="mt-4 flex flex-wrap gap-2">
+      <div class="mt-3 flex flex-wrap gap-2">
         <button id="calcBtn" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold shadow-soft">คำนวณ ✨</button>
         <button id="copyBtn" class="px-4 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60">คัดลอกสรุป</button>
+        <button id="shareBtn" class="px-4 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60">แชร์</button>
         <button id="resetBtn" class="px-4 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60">ล้างข้อมูล</button>
       </div>
-      <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">หมายเหตุ: เครื่องมือนี้ใช้เพื่อ <b>ประกอบการตัดสินใจ</b> เลือกแบบแผนเบื้องต้นเท่านั้น — ไม่ใช่ข้อมูลจริง/ใบเสนอราคา; ต้องขอรายละเอียดจากบริษัทตามเงื่อนไขที่ได้รับอนุมัติ และสอบถามข้อมูลเพิ่มเติมได้กับเพจ <b>GG‑NinePlanner</b>.</p>
-    </section><!-- Results -->
-<section class="mt-6 grid lg:grid-cols-3 gap-4">
-  <!-- Plan Cards -->
-  <div id="planA" class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 glass animate-fadeUp" style="animation-delay:.05s">
+      <p class="mt-3 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">หมายเหตุ: เครื่องมือนี้ใช้เพื่อ <b>ประกอบการตัดสินใจ</b> เลือกแบบแผนเบื้องต้นเท่านั้น — ไม่ใช่ข้อมูลจริง/ใบเสนอราคา; ต้องขอรายละเอียดจากบริษัทตามเงื่อนไขที่ได้รับอนุมัติ และสอบถามข้อมูลเพิ่มเติมได้กับเพจ <b>GG‑NinePlanner</b>.</p>
+    </section><!-- Results: mobile-first stacked cards -->
+<section class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <!-- Plan Card Template: A -->
+  <article id="planA" class="rounded-2xl p-4 border border-slate-200/60 dark:border-slate-800/60 glass dark:glass-dark animate-fadeUp" style="animation-delay:.02s" aria-live="polite">
     <div class="flex items-center justify-between">
-      <h3 class="font-extrabold">แพ็ก A — เริ่มต้นเอาตัวรอด</h3>
-      <span class="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300/60 dark:border-slate-700/60">งบต่ำ</span>
+      <h3 class="font-extrabold text-sm sm:text-base">แพ็ก A — เริ่มต้นเอาตัวรอด</h3>
+      <span class="text-[10px] px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300/60 dark:border-slate-700/60">งบต่ำ</span>
     </div>
-    <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">เน้นปิดหนี้หลัก + กันเสี่ยงหนักก่อน</p>
+    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">เน้นปิดหนี้หลัก + กันเสี่ยงหนักก่อน</p>
     <ul class="text-sm divide-y divide-slate-200/60 dark:divide-slate-800/60">
       <li class="py-2 flex justify-between"><span>Term Life (ทุนชีวิต)</span><b id="a_life">—</b></li>
       <li class="py-2 flex justify-between"><span>Critical Illness (โรคร้ายแรง)</span><b id="a_ci">—</b></li>
       <li class="py-2 flex justify-between"><span>PA (อุบัติเหตุ)</span><b id="a_pa">—</b></li>
       <li class="py-2 flex justify-between"><span>Hospital Cash (ชดเชยรายวัน)</span><b id="a_cash">—</b></li>
     </ul>
-    <div class="mt-3 text-xs text-slate-500" id="a_hint">—</div>
-  </div>
+    <details class="mt-2">
+      <summary class="cursor-pointer text-brand-500 text-sm">เหตุผลที่แนะนำ</summary>
+      <div id="a_hint" class="mt-1 text-xs text-slate-500">—</div>
+    </details>
+  </article>
 
-  <div id="planB" class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 glass ring-2 ring-brand-500/30 animate-fadeUp" style="animation-delay:.1s">
+  <!-- Plan B -->
+  <article id="planB" class="rounded-2xl p-4 border border-brand-300/60 ring-1 ring-brand-400/40 dark:border-brand-700/40 glass dark:glass-dark animate-fadeUp" style="animation-delay:.06s" aria-live="polite">
     <div class="flex items-center justify-between">
-      <h3 class="font-extrabold">แพ็ก B — สมดุลครอบครัว (แนะนำ)</h3>
-      <span class="text-xs px-2 py-1 rounded-full bg-brand-100 text-brand-800 border border-brand-300">สมดุล</span>
+      <h3 class="font-extrabold text-sm sm:text-base">แพ็ก B — สมดุลครอบครัว (แนะนำ)</h3>
+      <span class="text-[10px] px-2 py-1 rounded-full bg-brand-100 text-brand-800 border border-brand-300">สมดุล</span>
     </div>
-    <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">คุ้ม 4 มิติ: ชีวิต / โรคร้าย / อุบัติเหตุ / รายได้หาย</p>
+    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">คุ้ม 4 มิติ: ชีวิต / โรคร้าย / อุบัติเหตุ / รายได้หาย</p>
     <ul class="text-sm divide-y divide-slate-200/60 dark:divide-slate-800/60">
       <li class="py-2 flex justify-between"><span>Term Life (ทุนชีวิต)</span><b id="b_life">—</b></li>
       <li class="py-2 flex justify-between"><span>Critical Illness (โรคร้ายแรง)</span><b id="b_ci">—</b></li>
       <li class="py-2 flex justify-between"><span>PA (อุบัติเหตุ)</span><b id="b_pa">—</b></li>
       <li class="py-2 flex justify-between"><span>Hospital Cash (ชดเชยรายวัน)</span><b id="b_cash">—</b></li>
     </ul>
-    <div class="mt-3 text-xs text-slate-500" id="b_hint">—</div>
-  </div>
+    <details class="mt-2">
+      <summary class="cursor-pointer text-brand-500 text-sm">เหตุผลที่แนะนำ</summary>
+      <div id="b_hint" class="mt-1 text-xs text-slate-500">—</div>
+    </details>
+  </article>
 
-  <div id="planC" class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 glass animate-fadeUp" style="animation-delay:.15s">
+  <!-- Plan C -->
+  <article id="planC" class="rounded-2xl p-4 border border-slate-200/60 dark:border-slate-800/60 glass dark:glass-dark animate-fadeUp" style="animation-delay:.1s" aria-live="polite">
     <div class="flex items-center justify-between">
-      <h3 class="font-extrabold">แพ็ก C — อุ่นใจระยะยาว</h3>
-      <span class="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300/60 dark:border-slate-700/60">งบสูง</span>
+      <h3 class="font-extrabold text-sm sm:text-base">แพ็ก C — อุ่นใจระยะยาว</h3>
+      <span class="text-[10px] px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300/60 dark:border-slate-700/60">งบสูง</span>
     </div>
-    <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">เพิ่มโรคร้ายแรง + ชดเชยรายวัน</p>
+    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">เพิ่มโรคร้ายแรง + ชดเชยรายวัน</p>
     <ul class="text-sm divide-y divide-slate-200/60 dark:divide-slate-800/60">
       <li class="py-2 flex justify-between"><span>Term Life (ทุนชีวิต)</span><b id="c_life">—</b></li>
       <li class="py-2 flex justify-between"><span>Critical Illness (โรคร้ายแรง)</span><b id="c_ci">—</b></li>
       <li class="py-2 flex justify-between"><span>PA (อุบัติเหตุ)</span><b id="c_pa">—</b></li>
       <li class="py-2 flex justify-between"><span>Hospital Cash (ชดเชยรายวัน)</span><b id="c_cash">—</b></li>
     </ul>
-    <div class="mt-3 text-xs text-slate-500" id="c_hint">—</div>
-  </div>
+    <details class="mt-2">
+      <summary class="cursor-pointer text-brand-500 text-sm">เหตุผลที่แนะนำ</summary>
+      <div id="c_hint" class="mt-1 text-xs text-slate-500">—</div>
+    </details>
+  </article>
 </section>
 
 <!-- Guidance / Why -->
-<section class="mt-6 grid md:grid-cols-2 gap-4">
-  <div class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 glass">
-    <h3 class="font-extrabold mb-2">🧠 คำแนะนำอัตโนมัติ (ตามข้อมูลของคุณ)</h3>
-    <ul id="advice" class="list-disc list-inside text-sm space-y-1 text-slate-600 dark:text-slate-300"></ul>
+<section class="mt-4 grid md:grid-cols-2 gap-3">
+  <div class="rounded-2xl p-4 border border-slate-200/60 dark:border-slate-800/60 glass dark:glass-dark">
+    <h3 class="font-extrabold mb-2 text-sm sm:text-base">🧠 คำแนะนำอัตโนมัติ (ตามข้อมูลของคุณ)</h3>
+    <ul id="advice" class="list-disc list-inside text-xs sm:text-sm space-y-1 text-slate-600 dark:text-slate-300"></ul>
   </div>
-  <div class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 glass">
-    <h3 class="font-extrabold mb-2">ℹ️ ทำไมถึงได้ตัวเลขนี้?</h3>
-    <p class="text-sm text-slate-600 dark:text-slate-300">เราใช้อัตราส่วนงบ <b>3–10% ของรายได้/เดือน</b> เพื่อคุ้มครองความเสี่ยงหลัก ปรับตามอายุ ผู้พึ่งพิง พฤติกรรมเสี่ยง และความสำคัญที่เลือก (กันเสี่ยง/สุขภาพ/ออม) จากนั้นตั้ง <b>ทุนชีวิตฐาน = หนี้รวม + รายได้ต่อปี × 3–5 ปี</b> แล้วแตกเป็นแพ็ก A/B/C ให้เลือกตามกำลัง</p>
-    <details class="mt-2 text-sm">
+  <div class="rounded-2xl p-4 border border-slate-200/60 dark:border-slate-800/60 glass dark:glass-dark">
+    <h3 class="font-extrabold mb-2 text-sm sm:text-base">ℹ️ ทำไมถึงได้ตัวเลขนี้?</h3>
+    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">ใช้อัตราส่วนงบ <b>3–10% ของรายได้/เดือน</b> เพื่อความคุ้มครองหลัก ปรับตามอายุ ผู้พึ่งพิง พฤติกรรมเสี่ยง และความสำคัญที่เลือก (กันเสี่ยง/สุขภาพ/ออม) จากนั้นตั้ง <b>ทุนชีวิตฐาน = หนี้รวม + รายได้ต่อปี × 3–5 ปี</b> แล้วแตกเป็นแพ็ก A/B/C ให้เลือก</p>
+    <details class="mt-2 text-xs sm:text-sm">
       <summary class="cursor-pointer text-brand-500">ดูสูตรย่อ</summary>
-      <pre class="mt-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-xs overflow-auto"><code class="font-mono">budget% = base(3–10%) + smoker? + dependents? + priority
+      <pre class="mt-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-[11px] overflow-auto"><code class="font-mono">budget% = base(3–10%) + smoker? + dependents? + priority
 
 lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase | B = 1.00× | C = 1.25× CI (อายุ<30: 200–800k, 30–44: 300–1000k, 45+: 400–1000k) PA = 300–700k + occupation boost Cash/Day (รัฐ: 1k/1.5k/2k | เอกชน: 0.8k/1.2k/1.5k)</code></pre> </details> </div> </section>
 
 <!-- Disclaimer -->
-<section class="mt-6">
-  <div class="rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 glass">
-    <h3 class="font-extrabold mb-2">📝 หมายเหตุสำคัญ</h3>
-    <p class="text-sm text-slate-600 dark:text-slate-300">ข้อมูลนี้จัดทำเพื่อ <b>ประกอบการตัดสินใจ</b> เบื้องต้นเท่านั้น ไม่ใช่เบี้ยจริง/ไม่ใช่ใบเสนอราคา ผลประโยชน์และเบี้ยจริงขึ้นกับอายุ เพศ สุขภาพ อาชีพ เงื่อนไขและการพิจารณารับประกันของบริษัท รวมถึงคำสั่ง/ข้อกำหนดของหน่วยงานกำกับ</p>
-    <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">สอบถามรายละเอียดและใบเสนอราคาได้ที่เพจ <b>GG‑NinePlanner</b>.</p>
+<section class="mt-4">
+  <div class="rounded-2xl p-4 border border-slate-200/60 dark:border-slate-800/60 glass dark:glass-dark">
+    <h3 class="font-extrabold mb-2 text-sm sm:text-base">📝 หมายเหตุสำคัญ</h3>
+    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">ข้อมูลนี้จัดทำเพื่อ <b>ประกอบการตัดสินใจ</b> เบื้องต้นเท่านั้น ไม่ใช่ข้อมูลจริง/ใบเสนอราคา ผลประโยชน์และเบี้ยจริงขึ้นกับอายุ เพศ สุขภาพ อาชีพ เงื่อนไขและการพิจารณารับประกันของบริษัท รวมถึงข้อกำหนดของหน่วยงานกำกับ</p>
+    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1">สอบถามรายละเอียดและใบเสนอราคาได้ที่เพจ <b>GG‑NinePlanner</b>.</p>
   </div>
 </section>
 
-  </main>  <footer class="border-t border-slate-200/60 dark:border-slate-800/60 py-6 text-center text-xs text-slate-500">
+  </main>  <!-- Sticky mobile action bar -->  <div class="sm:hidden fixed bottom-0 inset-x-0 z-40 p-3 pt-1 bg-gradient-to-t from-slate-950/70 to-transparent">
+    <div class="max-w-6xl mx-auto flex gap-2">
+      <button id="mobileCalc" class="flex-1 px-4 py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold shadow-soft">คำนวณ ✨</button>
+      <button id="mobileShare" class="px-4 py-3 rounded-2xl border border-slate-700/60 bg-slate-900/60 text-white">แชร์</button>
+    </div>
+  </div>  <footer class="border-t border-slate-200/60 dark:border-slate-800/60 py-6 text-center text-[11px] sm:text-xs text-slate-500">
     © 2025 GG‑NINEPLANNER · Prototype for decision support — no server, no tracking
   </footer>  <script>
     // ===== Theme =====
@@ -253,20 +260,25 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
 
     // ===== Helpers =====
     const $ = (sel)=> document.querySelector(sel);
-    const fmtTHB = (n)=> isNaN(n)? '—' : n.toLocaleString('th-TH',{style:'currency',currency:'THB',maximumFractionDigits:0});
+    const $$ = (sel)=> document.querySelectorAll(sel);
+    const fmtTHB = (n)=> isNaN(n)? '—' : new Intl.NumberFormat('th-TH',{style:'currency',currency:'THB',maximumFractionDigits:0}).format(n);
     const fmtNum = (n)=> isNaN(n)? 0 : Math.max(0, Math.floor(n));
     const roundTo = (n, step)=> Math.round(n/step)*step;
     const clamp = (n, min, max)=> Math.min(max, Math.max(min,n));
+    const PAGE_URL = 'https://facebook.com/'; // TODO: เปลี่ยนเป็นเพจจริงของ GG‑NinePlanner
 
-    // ===== State save/load =====
+    // ===== State save/load (LocalStorage) =====
     const fields = ['age','sex','income','dependents','smoker','occupation','hospital','homeDebt','carDebt','priority'];
     function save(){ const data={}; fields.forEach(k=> data[k] = $('#'+k).value); localStorage.setItem('ggnp_form', JSON.stringify(data)); }
     function load(){ try{ const d=JSON.parse(localStorage.getItem('ggnp_form')||'{}'); fields.forEach(k=>{ if(d[k]!==undefined) $('#'+k).value=d[k];}); }catch(e){} }
 
+    // ===== Debounce =====
+    function debounce(fn, wait=200){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), wait); }; }
+
     // ===== Core calc =====
     function calc(){
-      const age = fmtNum(+$('#age').value); if(!age){ alert('กรอกอายุก่อนนะ'); return; }
-      const income = fmtNum(+$('#income').value); if(!income){ alert('กรอกรายได้ต่อเดือนก่อนนะ'); return; }
+      const age = fmtNum(+$('#age').value); if(!age){ toast('กรอกอายุ'); return; }
+      const income = fmtNum(+$('#income').value); if(!income){ toast('กรอกรายได้ต่อเดือน'); return; }
       const dependents = fmtNum(+$('#dependents').value||0);
       const smoker = $('#smoker').value==='yes';
       const occ = $('#occupation').value; // low/med/high
@@ -289,7 +301,7 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
       const paA=300000+occBoost, paB=500000+occBoost, paC=700000+occBoost;
       const cashA=hospital==='public'?1000:800, cashB=hospital==='public'?1500:1200, cashC=hospital==='public'?2000:1500;
 
-      // Update KPIs
+      // KPIs
       $('#kpiRange').textContent = `${fmtTHB(rangeMin)} – ${fmtTHB(rangeMax)}`;
       $('#kpiLife').textContent = fmtTHB(lifeBase);
 
@@ -299,11 +311,11 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
       $('#a_pa').textContent = fmtTHB(paA);   $('#b_pa').textContent = fmtTHB(paB);   $('#c_pa').textContent = fmtTHB(paC);
       $('#a_cash').textContent = cashA.toLocaleString('th-TH')+" บ./วัน"; $('#b_cash').textContent = cashB.toLocaleString('th-TH')+" บ./วัน"; $('#c_cash').textContent = cashC.toLocaleString('th-TH')+" บ./วัน";
 
-      // Dynamic hints per plan
+      // Hints
       const publicHosp = hospital==='public';
       const aHint = [];
       aHint.push('เริ่มที่ปิดหนี้หลักและกันเสี่ยงหนัก');
-      if(publicHosp) aHint.push('ใช้สิทธิ รพ.รัฐ + เสริมเงินชดเชยรายวัน'); else aHint.push('ใช้เอกชนบ่อย ให้พิจารณา IPD ภายหลัง');
+      aHint.push(publicHosp? 'ใช้สิทธิ รพ.รัฐ + เสริมเงินชดเชยรายวัน':'ใช้เอกชนบ่อย → พิจารณา IPD ภายหลัง');
       if(income<10000) aHint.push('คุมงบ 3–6% ของรายได้/เดือนก่อน');
       $('#a_hint').textContent = '• '+aHint.join(' • ');
 
@@ -318,16 +330,16 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
       if(age>=40) cHint.push('วัยเริ่มเสี่ยง NCD — ดัน CI สูงขึ้น');
       $('#c_hint').textContent = '• '+cHint.join(' • ');
 
-      // Advice bullets
+      // Advice list
       const tips = [];
       if(dependents>0) tips.push('มีคนพึ่งพิง → ดันทุนชีวิต ≥ หนี้รวม + ค่าใช้จ่าย 2–3 ปี');
-      if(publicHosp) tips.push('ใช้ รพ.รัฐบ่อย → Hospital Cash ช่วยชดเชยรายได้'); else tips.push('ใช้ รพ.เอกชน → พิจารณา IPD ตามวงเงินค่าห้องของโรงพยาบาล');
+      tips.push(publicHosp ? 'ใช้ รพ.รัฐบ่อย → Hospital Cash ช่วยชดเชยรายได้' : 'ใช้ รพ.เอกชน → พิจารณา IPD ตามวงเงินค่าห้องของ รพ.');
       if(occ==='high') tips.push('งานภาคสนาม → เพิ่มทุน PA และตรวจข้อยกเว้นอาชีพ');
-      if(smoker) tips.push('สูบบุหรี่ → เบี้ยอาจสูงขึ้น ควรตรวจสุขภาพก่อนทำ'); else tips.push('ไม่สูบ → เบี้ยมักดีกว่า กลุ่มสูบ');
+      tips.push(smoker ? 'สูบบุหรี่ → เบี้ยอาจสูงขึ้น ควรตรวจสุขภาพก่อนทำ' : 'ไม่สูบ → เบี้ยมักดีกว่า กลุ่มสูบ');
       if(income<=20000) tips.push('คุมงบที่ 5–10% ของรายได้/เดือน และขยับเพิ่มเมื่อรายได้โต');
       $('#advice').innerHTML = tips.map(t=>`<li>${t}</li>`).join('');
 
-      // Copy summary
+      // Copy/Share summary
       const summary = [
         `งบแนะนำ/เดือน: ${fmtTHB(budget)} (ช่วง ${fmtTHB(rangeMin)}–${fmtTHB(rangeMax)})`,
         `ทุนชีวิตฐาน (หนี้รวม + รายได้×${dependents>=2?5:3}ปี): ${fmtTHB(lifeBase)}`,
@@ -342,21 +354,42 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
       save();
     }
 
-    // Bind events
-    fields.forEach(k=> $('#'+k).addEventListener('input', save));
+    const debouncedCalc = debounce(calc, 150);
+
+    // Bind events (auto-calc on change for mobile convenience)
+    fields.forEach(k=> $('#'+k).addEventListener('input', debouncedCalc));
     document.getElementById('calcBtn').addEventListener('click', calc);
+    document.getElementById('mobileCalc').addEventListener('click', calc);
     document.getElementById('quickCalc').addEventListener('click', ()=>{
-      // Seed example
       $('#age').value=38; $('#sex').value='male'; $('#income').value=20000; $('#dependents').value=1; $('#smoker').value='no'; $('#occupation').value='low'; $('#hospital').value='public'; $('#homeDebt').value=800000; $('#carDebt').value=250000; $('#priority').value='risk'; calc();
     });
-    document.getElementById('copyBtn').addEventListener('click', async ()=>{
-      const s=document.body.dataset.summary||''; if(!s){ alert('กรอกและกดคำนวณก่อนนะ'); return; }
-      try{ await navigator.clipboard.writeText(s); alert('คัดลอกสรุปแล้ว'); }catch(e){ alert('คัดลอกไม่สำเร็จบนเบราว์เซอร์นี้'); }
-    });
+
+    // Copy & Share
+    async function doCopy(){ const s=document.body.dataset.summary||''; if(!s){ toast('กรอกและกดคำนวณก่อนนะ'); return; } try{ await navigator.clipboard.writeText(s); toast('คัดลอกสรุปแล้ว'); }catch(e){ toast('คัดลอกไม่สำเร็จบนเบราว์เซอร์นี้'); } }
+    document.getElementById('copyBtn').addEventListener('click', doCopy);
+
+    async function doShare(){ const s=document.body.dataset.summary||''; if(!s){ toast('กรอกและกดคำนวณก่อนนะ'); return; }
+      if(navigator.share){ try{ await navigator.share({ title:'สรุปแผนคุ้มครอง — GG‑NinePlanner', text:s, url:PAGE_URL }); } catch(e){} }
+      else { doCopy(); }
+    }
+    document.getElementById('shareBtn').addEventListener('click', doShare);
+    document.getElementById('mobileShare').addEventListener('click', doShare);
+
+    // Reset & Print
     document.getElementById('resetBtn').addEventListener('click', ()=>{ if(confirm('ล้างข้อมูลทั้งหมด?')){ localStorage.removeItem('ggnp_form'); location.reload(); }});
     document.getElementById('printBtn').addEventListener('click', ()=> window.print());
 
-    // Load saved state and initial calc (if possible)
+    // Toast helper (mobile friendly)
+    function toast(msg){
+      let el = document.getElementById('toast');
+      if(!el){ el = document.createElement('div'); el.id='toast'; el.className='fixed left-1/2 -translate-x-1/2 bottom-24 sm:bottom-6 z-50'; document.body.appendChild(el); }
+      el.innerHTML = `<div class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm shadow-soft">${msg}</div>`;
+      clearTimeout(window.__toastTimeout); window.__toastTimeout = setTimeout(()=>{ el.innerHTML=''; }, 1800);
+    }
+
+    // Init
     load();
+    // If we already have minimal data, pre-calc
+    if($('#age').value && $('#income').value){ calc(); }
   </script></body>
 </html>
