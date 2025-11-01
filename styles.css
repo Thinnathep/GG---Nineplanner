@@ -140,3 +140,17 @@ input[type="range"]{ width:100% }
 .hidden{ opacity:0 }
 .plan.show{ animation:fadeUp .35s ease forwards }
 @keyframes fadeUp{ from{ opacity:0; transform:translateY(10px) } to{ opacity:1; transform:translateY(0) } }
+
+/* Fade-up cards */
+.card-fade {
+  transition: opacity .35s ease, transform .35s ease;
+}
+
+/* เมื่อ JS เปิดใช้งานแล้ว จะลบ opacity/translate ออกทีละใบ */
+.card-fade.show {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* สำหรับโหมดมืดบางองค์ประกอบที่ Tailwind handle ไม่ครบ */
+html.dark .shadow-soft { box-shadow: 0 10px 30px rgba(0,0,0,.35); }
