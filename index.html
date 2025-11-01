@@ -2,7 +2,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>GG‑NINEPLANNER — Insurance Budget Planner (v4 Mobile‑First)</title>
+  <title>GG‑NINEPLANNER — Insurance Budget Planner (v5 Mobile‑First)</title>
   <meta name="description" content="เครื่องคำนวณประกอบการตัดสินใจเลือกความคุ้มครองชีวิต/โรคร้าย/อุบัติเหตุ/ชดเชยรายวัน — รองรับมือถือ, โหมดสว่าง/มืด, ไม่เก็บข้อมูลบนเซิร์ฟเวอร์, ไม่ใช่ใบเสนอราคา" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230ea5e9'/%3E%3Ctext x='50' y='58' font-size='46' text-anchor='middle' fill='white' font-family='sans-serif'%3EGG%3C/text%3E%3C/svg%3E">
   <!-- Tailwind CDN (prototype) -->
@@ -10,6 +10,7 @@
   <!-- SweetAlert2 for toasts/modals -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
+    // Tailwind config
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -48,7 +49,10 @@
         <div class="font-extrabold tracking-tight text-base sm:text-lg">GG‑NINEPLANNER</div>
         <span class="hidden sm:inline ml-2 text-[10px] sm:text-xs px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300">Insurance Budget Planner</span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-3">
+        <div id="cdnStatus" class="hidden sm:flex items-center gap-2 text-[10px] px-2 py-1 rounded-full border border-slate-300/60 dark:border-slate-700/60">
+          CDN: <span id="stTw">TW—</span> · <span id="stSwal">SW—</span>
+        </div>
         <button id="themeBtn" class="px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-900 transition" aria-label="สลับโหมดแสง/มืด">
           <span id="sun" class="hidden" aria-hidden="true">☀️</span>
           <span id="moon" aria-hidden="true">🌙</span>
@@ -97,7 +101,9 @@
     <section class="rounded-2xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-800/60 glass dark:glass-dark animate-fadeUp" style="animation-delay:.12s">
       <div class="flex items-center justify-between">
         <h2 class="text-base sm:text-lg font-extrabold mb-2">🧾 ข้อมูลของคุณ</h2>
-        <button id="toggleAdvanced" class="text-xs px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60">โหมดขั้นสูง</button>
+        <div class="flex items-center gap-2">
+          <button id="toggleAdvanced" class="text-xs px-3 py-2 rounded-xl border border-slate-300/60 dark:border-slate-700/60">โหมดขั้นสูง</button>
+        </div>
       </div>
       <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-4">กรอกเฉพาะที่จำเป็น — ระบบจะคำนวณอัตโนมัติเมื่อเปลี่ยนค่า</p><!-- Presets -->
   <div class="flex flex-wrap gap-2 mb-3">
@@ -238,6 +244,7 @@
   <article id="planC" class="opacity-0 translate-y-3 rounded-2xl p-4 border border-slate-200/60 dark:border-slate-800/60 glass dark:glass-dark">
     <div class="flex items-center justify-between">
       <h3 class="font-extrabold text-sm sm:text-base">แพ็ก C — เพิ่มความคุ้มครอง</h3>
+    
       <span class="text-[10px] px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-300/60 dark:border-slate-700/60">งบสูง</span>
     </div>
     <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-2">เพิ่มโรคร้ายแรง + ชดเชยรายวัน</p>
@@ -307,8 +314,13 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
       applyTheme(localStorage.getItem('theme'));
     });
 
-    // ===== SweetAlert2 Toast =====
-    const Toast = Swal.mixin({
+    // ===== Safe SweetAlert2 setup (fallback) =====
+    const hasTw = !!window.tailwind;
+    const hasSwal = !!window.Swal;
+    const statusEl = document.getElementById('cdnStatus');
+    if(statusEl){ statusEl.classList.remove('hidden'); document.getElementById('stTw').textContent = hasTw? 'TW✅' : 'TW❌'; document.getElementById('stSwal').textContent = hasSwal? 'SW✅' : 'SW❌'; }
+
+    const Toast = hasSwal ? Swal.mixin({
       toast: true,
       position: 'top-end',
       showConfirmButton: false,
@@ -316,6 +328,11 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
       timerProgressBar: true,
       padding: '10px 14px',
       didOpen: (t)=>{ t.addEventListener('mouseenter', Swal.stopTimer); t.addEventListener('mouseleave', Swal.resumeTimer); }
+    }) : { fire: ({icon, title}) => { console.log(icon||'info', title||''); } };
+
+    // Global JS error catcher (fallback alert)
+    window.addEventListener('error', (e)=>{
+      try { Toast.fire({icon:'error', title:'สคริปต์มีปัญหา: '+e.message}); } catch(_) { alert('สคริปต์มีปัญหา: '+e.message); }
     });
 
     // ===== Helpers =====
@@ -362,17 +379,9 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
     const manualBudgetWrap = $('#manualBudgetWrap');
     const manualBudgetPct = $('#manualBudgetPct');
 
-    advBtn.addEventListener('click', ()=>{
-      advPanel.classList.toggle('hidden');
-    });
-    autoBudget.addEventListener('change', ()=>{
-      manualBudgetWrap.style.opacity = autoBudget.checked ? .5 : 1;
-      debouncedCalc();
-    });
-    manualBudget.addEventListener('input', ()=>{
-      manualBudgetPct.textContent = manualBudget.value + '%';
-      debouncedCalc();
-    });
+    advBtn.addEventListener('click', ()=>{ advPanel.classList.toggle('hidden'); });
+    autoBudget.addEventListener('change', ()=>{ manualBudgetWrap.style.opacity = autoBudget.checked ? .5 : 1; debouncedCalc(); });
+    manualBudget.addEventListener('input', ()=>{ manualBudgetPct.textContent = manualBudget.value + '%'; debouncedCalc(); });
 
     // ===== Presets =====
     $$('[data-preset]').forEach(btn=>{
@@ -408,7 +417,10 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
       let valid = true;
       if(!(age>=18 && age<=70)){ valid=false; $('#age').setAttribute('aria-invalid','true'); } else { $('#age').removeAttribute('aria-invalid'); }
       if(!(income>0)){ valid=false; $('#income').setAttribute('aria-invalid','true'); } else { $('#income').removeAttribute('aria-invalid'); }
-      if(!valid){ Toast.fire({icon:'error', title:'กรอกอายุ 18–70 ปี และรายได้ต่อเดือนให้ถูกต้อง'}); return; }
+      if(!valid){
+        try{ Toast.fire({icon:'error', title:'กรอกอายุ 18–70 ปี และรายได้ต่อเดือนให้ถูกต้อง'}); }catch(_){ alert('กรอกข้อมูลไม่ครบ'); }
+        return;
+      }
 
       const annual = income*12; const debt = homeDebt+carDebt;
 
@@ -416,7 +428,7 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
       let autoPerc = income < 5000 ? 0.04 : income < 10000 ? 0.05 : income <= 20000 ? 0.07 : 0.08;
       if(smoker) autoPerc += 0.01; if(dependents>=2) autoPerc += 0.01; if(priority==='health') autoPerc -= 0.005; autoPerc = clamp(autoPerc, 0.03, 0.10);
 
-      const usedPerc = autoBudget.checked ? autoPerc : (Number(manualBudget.value)/100);
+      const usedPerc = (autoBudget && autoBudget.checked) ? autoPerc : (Number(manualBudget?.value||7)/100);
 
       const budget = income*usedPerc, rangeMin=income*0.03, rangeMax=income*0.10;
 
@@ -432,10 +444,10 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
       let mix = { life:50, ci:25, pa:15, cash:10 };
       if(priority==='health') mix = { life:40, ci:35, pa:15, cash:10 };
       if(priority==='savings') mix = { life:55, ci:20, pa:15, cash:10 };
-      $('#barLife').style.width = mix.life+'%'; $('#pctLife').textContent = mix.life+'%';
-      $('#barCI').style.width = mix.ci+'%'; $('#pctCI').textContent = mix.ci+'%';
-      $('#barPA').style.width = mix.pa+'%'; $('#pctPA').textContent = mix.pa+'%';
-      $('#barCash').style.width = mix.cash+'%'; $('#pctCash').textContent = mix.cash+'%';
+      if($('#barLife')){ $('#barLife').style.width = mix.life+'%'; $('#pctLife').textContent = mix.life+'%'; }
+      if($('#barCI')){ $('#barCI').style.width = mix.ci+'%'; $('#pctCI').textContent = mix.ci+'%'; }
+      if($('#barPA')){ $('#barPA').style.width = mix.pa+'%'; $('#pctPA').textContent = mix.pa+'%'; }
+      if($('#barCash')){ $('#barCash').style.width = mix.cash+'%'; $('#pctCash').textContent = mix.cash+'%'; }
 
       // KPIs (animated)
       animateNumber($('#kpiBudget'), budget);
@@ -486,7 +498,7 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
         if(plan==='B'){ $('#b_badge').textContent = 'เหมาะสมตามงบ'; }
         if(lastPlan!==plan){
           const name = plan==='A'? 'แพ็ก A — เริ่มต้น' : plan==='B'? 'แพ็ก B — สมดุล' : 'แพ็ก C — เพิ่มความคุ้มครอง';
-          Toast.fire({icon:'info', title:`แนะนำ ${name}`});
+          try{ Toast.fire({icon:'info', title:`แนะนำ ${name}`}); }catch(_){ console.log('แนะนำ', name); }
           lastPlan = plan;
         }
       }
@@ -522,11 +534,12 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
     });
 
     // Copy & Share & Export
-    async function doCopy(){ const s=document.body.dataset.summary||''; if(!s){ Toast.fire({icon:'warning', title:'กรอกและคำนวณก่อน'}); return; } try{ await navigator.clipboard.writeText(s); Toast.fire({icon:'success', title:'คัดลอกสรุปแล้ว'}); }catch(e){ Toast.fire({icon:'error', title:'คัดลอกไม่สำเร็จบนเบราว์เซอร์นี้'}); } }
+    async function doCopy(){ const s=document.body.dataset.summary||''; if(!s){ try{ Toast.fire({icon:'warning', title:'กรอกและคำนวณก่อน'});}catch(_){ alert('กรอกและคำนวณก่อน'); } return; } try{ await navigator.clipboard.writeText(s); Toast.fire({icon:'success', title:'คัดลอกสรุปแล้ว'}); }catch(e){ try{ Toast.fire({icon:'error', title:'คัดลอกไม่สำเร็จบนเบราว์เซอร์นี้'});}catch(_){ alert('คัดลอกไม่สำเร็จ'); } }
+    }
     document.getElementById('copyBtn').addEventListener('click', doCopy);
 
-    async function doShare(){ const s=document.body.dataset.summary||''; if(!s){ Toast.fire({icon:'warning', title:'กรอกและคำนวณก่อน'}); return; }
-      if(navigator.share){ try{ await navigator.share({ title:'สรุปแผนคุ้มครอง — GG‑NinePlanner', text:s }); Toast.fire({icon:'success', title:'แชร์แล้ว'}); } catch(e){} }
+    async function doShare(){ const s=document.body.dataset.summary||''; if(!s){ try{ Toast.fire({icon:'warning', title:'กรอกและคำนวณก่อน'});}catch(_){ alert('กรอกและคำนวณก่อน'); } return; }
+      if(navigator.share){ try{ await navigator.share({ title:'สรุปแผนคุ้มครอง — GG‑NinePlanner', text:s }); try{ Toast.fire({icon:'success', title:'แชร์แล้ว'});}catch(_){} } catch(e){} }
       else { doCopy(); }
     }
     document.getElementById('shareBtn').addEventListener('click', doShare);
@@ -537,21 +550,23 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
       const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href=url; a.download='gg-nineplanner.json'; a.click(); URL.revokeObjectURL(url);
-      Toast.fire({icon:'success', title:'ส่งออกไฟล์ gg-nineplanner.json'});
+      try{ Toast.fire({icon:'success', title:'ส่งออกไฟล์ gg-nineplanner.json'});}catch(_){}
     });
 
-    // Reset & Print (confirm with modal)
+    // Reset & Print (confirm with modal or fallback)
     document.getElementById('resetBtn').addEventListener('click', ()=>{
-      Swal.fire({
-        title: 'ล้างข้อมูลทั้งหมด?',
-        text: 'ค่าที่กรอกและข้อมูลที่บันทึกไว้ในเครื่องจะถูกลบ',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'ล้างข้อมูล',
-        cancelButtonText: 'ยกเลิก'
-      }).then((res)=>{
-        if(res.isConfirmed){ localStorage.removeItem('ggnp_form'); location.reload(); }
-      });
+      if(hasSwal){
+        Swal.fire({
+          title: 'ล้างข้อมูลทั้งหมด?',
+          text: 'ค่าที่กรอกและข้อมูลที่บันทึกไว้ในเครื่องจะถูกลบ',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'ล้างข้อมูล',
+          cancelButtonText: 'ยกเลิก'
+        }).then((res)=>{ if(res.isConfirmed){ localStorage.removeItem('ggnp_form'); location.reload(); } });
+      } else {
+        if(confirm('ล้างข้อมูลทั้งหมด?')){ localStorage.removeItem('ggnp_form'); location.reload(); }
+      }
     });
     document.getElementById('printBtn').addEventListener('click', ()=> window.print());
 
@@ -559,4 +574,4 @@ lifeBase = (homeDebt + carDebt) + (income*12) * years(3–5) A = 0.75×lifeBase 
     load();
     if($('#age').value && $('#income').value){ calc(); }
   </script></body>
-</html>
+  </html>
