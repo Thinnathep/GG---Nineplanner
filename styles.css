@@ -1,0 +1,33 @@
+/* Utility & helpers (เสริมจาก Tailwind) */
+.glass{backdrop-filter:blur(10px);background:linear-gradient(180deg,rgba(255,255,255,.65),rgba(255,255,255,.35))}
+.dark .glass,.glass-dark{backdrop-filter:blur(10px);background:linear-gradient(180deg,rgba(2,6,23,.65),rgba(2,6,23,.35))}
+input[aria-invalid="true"]{outline:2px solid #ef4444;outline-offset:0}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+}
+
+/* Tiny shortcuts to keep HTML clean */
+.chip{padding:.375rem .75rem;border-radius:9999px;border:1px solid rgba(148,163,184,.6)}
+.lbl{display:flex;flex-direction:column;gap:.25rem;font-size:.875rem}
+.ipt{padding:.5rem .75rem;border-radius:.75rem;border:1px solid rgba(148,163,184,.6);background:#fff}
+.dark .ipt{background:#0b1220;border-color:#1f2937}
+.help{font-size:.6875rem;color:#64748b}
+.btn{padding:.5rem 1rem;border-radius:.75rem;border:1px solid rgba(148,163,184,.6)}
+.btn-primary{padding:.5rem 1rem;border-radius:.75rem;background:#0ea5e9;color:#fff;box-shadow:0 10px 30px rgba(2,6,23,.25)}
+.disclaimer{font-size:.6875rem;color:#64748b}
+.card{opacity:0;transform:translateY(6px);border-radius:1rem;padding:1rem;border:1px solid rgba(203,213,225,.6);background:linear-gradient(180deg,rgba(255,255,255,.65),rgba(255,255,255,.35))}
+.dark .card{border-color:rgba(30,41,59,.6);background:linear-gradient(180deg,rgba(2,6,23,.65),rgba(2,6,23,.35))}
+.cardtitle{font-weight:800;font-size:.95rem}
+.carddesc{font-size:.8rem;color:#64748b}
+.badge{font-size:.625rem;padding:.125rem .5rem;border-radius:9999px;background:rgba(15,23,42,.06);border:1px solid rgba(148,163,184,.6)}
+.ulist{font-size:.9rem}
+.row{display:flex;justify-content:space-between;padding:.5rem 0;border-top:1px solid rgba(203,213,225,.6)}
+.dark .row{border-color:rgba(30,41,59,.6)}
+.sum{cursor:pointer;color:#0ea5e9;font-size:.85rem}
+.hint{margin-top:.25rem;font-size:.75rem;color:#64748b}
+
+.mixrow{display:flex;align-items:center;gap:.5rem}
+.bar{flex:1;height:.5rem;border-radius:.5rem;background:#e2e8f0}
+.dark .bar{background:#1f2937}
+.barin{height:.5rem;border-radius:.5rem;background:#0ea5e9}
